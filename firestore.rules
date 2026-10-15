@@ -1,0 +1,53 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Quizzes collection
+    match /quizzes/{quizId} {
+      allow read: if resource.data.isPublic == true || request.auth != null;
+      allow create: if request.auth != null && request.resource.data.authorId == request.auth.uid;
+      allow update, delete: if request.auth != null && resource.data.authorId == request.auth.uid;
+
+      // Questions subcollection
+      match /questions/{questionId} {
+        allow read: if true;
+        allow write: if request.auth != null && get(/databases/$(database)/documents/quizzes/$(quizId)).data.authorId == request.auth.uid;
+      }
+    }
+
+    // Quiz Sessions collection
+    match /quiz_sessions/{sessionId} {
+      allow read: if true; // Publicly readable for participants with PIN
+      allow create: if request.auth != null;
+      allow update: if request.auth != null && resource.data.hostId == request.auth.uid;
+      allow delete: if request.auth != null && resource.data.hostId == request.auth.uid;
+
+      // Participants subcollection
+      match /participants/{participantId} {
+        allow read: if true;
+        allow create: if true; // Students can join as guests
+        allow update: if true; // State/score synced by server or student
+        allow delete: if request.auth != null;
+      }
+
+      // Responses subcollection
+      match /responses/{responseId} {
+        allow read: if true;
+        allow create: if true;
+        allow update, delete: if false; // Immutability for responses (anti-tamper)
+      }
+
+      // Leaderboards subcollection
+      match /leaderboards/{boardId} {
+        allow read: if true;
+        allow write: if request.auth != null;
+      }
+    }
+
+    // User profiles (hosts)
+    match /users/{userId} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}

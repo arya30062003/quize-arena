@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: quiz-arena
+    env: docker
+    plan: free
+    dockerfilePath: Dockerfile
+    envVars:
+      - key: PORT
+        value: 8080
+      - key: CLIENT_URL
+        value: "*"
