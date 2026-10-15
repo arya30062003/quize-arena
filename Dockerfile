@@ -4,18 +4,20 @@ FROM node:20-alpine AS build
 WORKDIR /app
 
 # 1. Build Client
-COPY client/package*.json ./client/
-RUN cd client && npm ci
+WORKDIR /app/client
+COPY client/package*.json ./
+RUN npm ci
 
-COPY client/ ./client/
-RUN cd client && npm run build
+COPY client/ ./
+RUN chmod -R +x node_modules/.bin && npm run build
 
 # 2. Build Server
-COPY server/package*.json ./server/
-RUN cd server && npm ci
+WORKDIR /app/server
+COPY server/package*.json ./
+RUN npm ci
 
-COPY server/ ./server/
-RUN cd server && npm run build
+COPY server/ ./
+RUN chmod -R +x node_modules/.bin && npm run build
 
 # --- Production Runner ---
 FROM node:20-alpine AS runner
