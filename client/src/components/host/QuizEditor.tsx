@@ -57,7 +57,7 @@ export const QuizEditor: React.FC<QuizEditorProps> = ({ quizId, onBack, onSaved 
       points: 100,
       order: questions.length + 1,
       options: [
-        { id: `opt-1-${Date.now()}`, text: 'Option A', isCorrect: true },
+        { id: `opt-1-${Date.now()}`, text: 'Option A', isCorrect: false },
         { id: `opt-2-${Date.now()}`, text: 'Option B', isCorrect: false },
         { id: `opt-3-${Date.now()}`, text: 'Option C', isCorrect: false },
         { id: `opt-4-${Date.now()}`, text: 'Option D', isCorrect: false }
