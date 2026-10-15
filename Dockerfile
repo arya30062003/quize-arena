@@ -1,37 +1,44 @@
 # Multi-stage Docker build for QuizArena (Frontend + Backend + WebSockets)
-FROM node:20-alpine AS build
+# Using node:20-slim (Debian-based) for better native module compatibility
 
-WORKDIR /app
+# ─── Stage 1: Build Client ───────────────────────────────────────────────────
+FROM node:20-slim AS client-build
 
-# 1. Build Client
 WORKDIR /app/client
+
 COPY client/package*.json ./
 RUN npm ci
 
 COPY client/ ./
-RUN chmod -R +x node_modules/.bin && npm run build
+RUN npm run build
 
-# 2. Build Server
+# ─── Stage 2: Build Server ───────────────────────────────────────────────────
+FROM node:20-slim AS server-build
+
 WORKDIR /app/server
+
 COPY server/package*.json ./
 RUN npm ci
 
 COPY server/ ./
-RUN chmod -R +x node_modules/.bin && npm run build
+RUN npm run build
 
-# --- Production Runner ---
-FROM node:20-alpine AS runner
+# ─── Stage 3: Production Runner ──────────────────────────────────────────────
+FROM node:20-slim AS runner
 
 WORKDIR /app
 
 ENV NODE_ENV=production
 ENV PORT=8080
 
-COPY --from=build /app/server/package*.json ./server/
-RUN cd server && npm ci --only=production
+# Copy server production deps + compiled output
+COPY server/package*.json ./server/
+RUN cd server && npm ci --omit=dev
 
-COPY --from=build /app/server/dist ./server/dist
-COPY --from=build /app/client/dist ./client/dist
+COPY --from=server-build /app/server/dist ./server/dist
+
+# Copy compiled client static files
+COPY --from=client-build /app/client/dist ./client/dist
 
 EXPOSE 8080
 
