@@ -20,6 +20,10 @@ async function createSession(req, res) {
         if (!quiz) {
             return res.status(404).json({ success: false, error: 'Quiz not found' });
         }
+        // Ensure only the quiz creator can host this session
+        if (hostId && hostId !== quiz.authorId) {
+            return res.status(403).json({ success: false, error: 'Only the quiz creator can host this quiz' });
+        }
         const session = sessionManager.createSession(quiz, hostId || 'host-admin', 'pending-socket');
         res.status(201).json({
             success: true,

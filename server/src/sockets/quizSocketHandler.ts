@@ -37,7 +37,8 @@ export function setupQuizSockets(io: Server) {
         avatar: p.avatar,
         score: p.score,
         rank: p.rank,
-        isConnected: p.isConnected
+        isConnected: p.isConnected,
+        emoji: p.emoji
       }));
 
       io.to(room).emit('participant_list_update', {
@@ -105,7 +106,8 @@ export function setupQuizSockets(io: Server) {
         avatar: p.avatar,
         score: p.score,
         rank: p.rank,
-        isConnected: p.isConnected
+        isConnected: p.isConnected,
+        emoji: p.emoji
       }));
 
       io.to(room).emit('participant_list_update', {
@@ -131,7 +133,7 @@ export function setupQuizSockets(io: Server) {
           avatar: p.avatar,
           score: p.score,
           rank: p.rank,
-          isConnected: p.isConnected
+          isConnected: p.isConnected, emoji: p.emoji
         }));
 
         socket.emit('participant_list_update', {
@@ -276,7 +278,8 @@ export function setupQuizSockets(io: Server) {
           avatar: p.avatar,
           score: p.score,
           rank: p.rank,
-          isConnected: p.isConnected
+          isConnected: p.isConnected,
+          emoji: p.emoji
         }));
 
         io.to(room).emit('participant_list_update', {

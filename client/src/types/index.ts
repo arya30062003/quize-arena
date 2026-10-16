@@ -39,6 +39,7 @@ export interface Participant {
   rank: number;
   streak: number;
   isConnected: boolean;
+  emoji: string; // unique emoji for participant
 }
 
 export interface QuestionDistribution {

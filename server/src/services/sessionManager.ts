@@ -14,6 +14,9 @@ import {
 import { ScoringService } from './scoringService';
 import { FirestoreService } from './firestoreService';
 
+// List of emojis to assign to participants uniquely per session
+const EMOJIS = ['🐶','🐱','🐭','🐹','🐰','🦊','🦁','🐷','🐻','🐼','🐸','🐵','🦉','🦇','🐔','🐧','🐦','🐤','🐣','🦢','🦜','🦩','🦚','🦞','🦐','🦑','🐙','🦈','🐬','🐳','🦖','🦕'];
+
 export class SessionManager {
   private static instance: SessionManager;
   private sessions: Map<string, ActiveSession> = new Map(); // sessionId -> ActiveSession
@@ -64,7 +67,7 @@ export class SessionManager {
       responses: new Map(),
       questionStartTime: 0,
       questionEndTime: 0,
-      createdAt: Date.now()
+      createdAt: Date.now(), usedEmojis: new Set()
     };
 
     this.sessions.set(sessionId, session);
@@ -123,6 +126,11 @@ export class SessionManager {
     }
 
     const participantId = uuidv4();
+    // Assign a unique emoji for the participant
+    const availableEmojis = EMOJIS.filter(e => !session.usedEmojis.has(e));
+    const emoji = availableEmojis.length ? availableEmojis[Math.floor(Math.random() * availableEmojis.length)] : '🙂';
+    // Record used emoji
+    session.usedEmojis.add(emoji);
     const participant: Participant = {
       id: participantId,
       socketId,
@@ -130,6 +138,7 @@ export class SessionManager {
       pin: session.pin,
       nickname: finalNickname,
       avatar: avatar || `avatar-${Math.floor(Math.random() * 8) + 1}`,
+      emoji,
       score: 0,
       rank: session.participants.size + 1,
       streak: 0,

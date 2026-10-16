@@ -54,6 +54,7 @@ export interface Participant {
   pin: string;
   nickname: string;
   avatar: string;
+  emoji: string; // unique participant emoji
   score: number;
   rank: number;
   streak: number;
@@ -114,6 +115,7 @@ export interface ActiveSession {
   createdAt: number;
   startedAt?: number;
   endedAt?: number;
+  usedEmojis: Set<string>; // Track assigned emojis in this session
 }
 
 export interface SessionAnalytics {
