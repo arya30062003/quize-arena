@@ -1,0 +1,28 @@
+.splash-screen {
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  z-index: 9999;
+  animation: fadeOut 0.5s ease-in-out 2.5s forwards;
+}
+
+.splash-content {
+  text-align: center;
+}
+
+.splash-title {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.splash-credit {
+  font-size: 1.25rem;
+}
+
+@keyframes fadeOut {
+  to { opacity: 0; visibility: hidden; }
+}

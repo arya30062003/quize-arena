@@ -10,6 +10,7 @@ import { HostPodium } from './components/host/HostPodium';
 import { AnalyticsDashboard } from './components/host/AnalyticsDashboard';
 
 import { PlayerJoin } from './components/player/PlayerJoin';
+import { SplashScreen } from './components/common/SplashScreen';
 import { PlayerLobby } from './components/player/PlayerLobby';
 import { PlayerQuestionView } from './components/player/PlayerQuestionView';
 import { PlayerAnswerFeedback } from './components/player/PlayerAnswerFeedback';
@@ -68,6 +69,7 @@ export const App: React.FC = () => {
     streak: number;
   }>({ isCorrect: false, pointsEarned: 0, streak: 0 });
   const [playerLeaderboard, setPlayerLeaderboard] = useState<LeaderboardEntry[]>([]);
+  const [showSplash, setShowSplash] = useState(true);
 
   // Pre-filled PIN from URL query param
   const [initialPin, setInitialPin] = useState('');
@@ -311,6 +313,9 @@ export const App: React.FC = () => {
     setCurrentView('join');
   };
 
+  if (showSplash) {
+    return <SplashScreen onFinish={() => setShowSplash(false)} />;
+  }
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-200">
       <Navbar

@@ -115,7 +115,7 @@ function setupQuizSockets(io) {
                     avatar: p.avatar,
                     score: p.score,
                     rank: p.rank,
-                    isConnected: p.isConnected, emoji: p.emoji, emoji: p.emoji
+                    isConnected: p.isConnected, emoji: p.emoji
                 }));
                 socket.emit('participant_list_update', {
                     count: session.participants.size,
