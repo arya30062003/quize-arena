@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect } from 'react';
 import {
   X,
   Github,
@@ -9,13 +9,13 @@ import {
   Sparkles,
   Award,
   CheckCircle2,
-  Camera,
   Heart,
   Globe,
   Terminal,
   Cpu,
   Layers,
-  Database
+  Database,
+  ShieldCheck
 } from 'lucide-react';
 
 interface DeveloperPortfolioProps {
@@ -23,32 +23,15 @@ interface DeveloperPortfolioProps {
   onClose: () => void;
 }
 
-const DEFAULT_PHOTO = 'https://github.com/arya30062003.png';
+const DEVELOPER_PHOTO = 'https://github.com/arya30062003.png';
 
 export const DeveloperPortfolio: React.FC<DeveloperPortfolioProps> = ({ isOpen, onClose }) => {
-  const [photoUrl, setPhotoUrl] = useState(() => {
-    return localStorage.getItem('developer_photo_url') || DEFAULT_PHOTO;
-  });
-  const [isEditingPhoto, setIsEditingPhoto] = useState(false);
-  const [customInputUrl, setCustomInputUrl] = useState('');
+  // Ensure any legacy localStorage override is removed so no one can change the photo
+  useEffect(() => {
+    localStorage.removeItem('developer_photo_url');
+  }, []);
 
   if (!isOpen) return null;
-
-  const handleSavePhoto = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (customInputUrl.trim()) {
-      setPhotoUrl(customInputUrl.trim());
-      localStorage.setItem('developer_photo_url', customInputUrl.trim());
-      setIsEditingPhoto(false);
-      setCustomInputUrl('');
-    }
-  };
-
-  const handleResetPhoto = () => {
-    setPhotoUrl(DEFAULT_PHOTO);
-    localStorage.removeItem('developer_photo_url');
-    setIsEditingPhoto(false);
-  };
 
   const skills = [
     { name: 'React 18 & TypeScript', category: 'Frontend', level: '95%' },
@@ -113,11 +96,11 @@ export const DeveloperPortfolio: React.FC<DeveloperPortfolioProps> = ({ isOpen, 
         {/* Profile Card Header with Photo */}
         <div className="px-6 sm:px-8 pb-6 pt-0 relative">
           <div className="flex flex-col sm:flex-row items-center sm:items-end gap-5 -mt-16 sm:-mt-20 mb-6 text-center sm:text-left">
-            {/* Developer Photo Container */}
+            {/* Developer Photo Container - Permanent & Verified */}
             <div className="relative group shrink-0">
               <div className="w-28 h-28 sm:w-36 sm:h-36 rounded-3xl overflow-hidden ring-4 ring-white dark:ring-slate-900 shadow-2xl bg-slate-800">
                 <img
-                  src={photoUrl}
+                  src={DEVELOPER_PHOTO}
                   alt="Aryan Kewte"
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   onError={(e) => {
@@ -127,22 +110,13 @@ export const DeveloperPortfolio: React.FC<DeveloperPortfolioProps> = ({ isOpen, 
                 />
               </div>
 
-              {/* Verified Badge */}
+              {/* Verified Official Badge */}
               <div 
-                className="absolute -bottom-1 -right-1 bg-indigo-600 text-white p-1.5 rounded-full ring-2 ring-white dark:ring-slate-900 shadow-md"
-                title="Verified Creator & Developer"
+                className="absolute -bottom-1 -right-1 bg-indigo-600 text-white p-1.5 rounded-full ring-2 ring-white dark:ring-slate-900 shadow-md flex items-center justify-center"
+                title="Verified Official Developer Photo (Locked)"
               >
                 <CheckCircle2 className="w-4 h-4" />
               </div>
-
-              {/* Photo edit trigger */}
-              <button
-                onClick={() => setIsEditingPhoto(!isEditingPhoto)}
-                className="absolute top-2 right-2 p-1.5 rounded-full bg-slate-900/80 hover:bg-slate-900 text-white opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm"
-                title="Change Photo URL"
-              >
-                <Camera className="w-3.5 h-3.5" />
-              </button>
             </div>
 
             {/* Developer Info */}
@@ -185,36 +159,7 @@ export const DeveloperPortfolio: React.FC<DeveloperPortfolioProps> = ({ isOpen, 
             </div>
           </div>
 
-          {/* Photo URL Customizer Modal Dropdown */}
-          {isEditingPhoto && (
-            <form onSubmit={handleSavePhoto} className="mb-6 p-4 rounded-2xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 animate-fade-in space-y-2">
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
-                Update Developer Photo URL:
-              </label>
-              <div className="flex gap-2">
-                <input
-                  type="url"
-                  value={customInputUrl}
-                  onChange={(e) => setCustomInputUrl(e.target.value)}
-                  placeholder="https://example.com/your-photo.jpg"
-                  className="flex-1 px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                />
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-indigo-600 text-white text-xs font-bold rounded-xl hover:bg-indigo-500 transition-colors"
-                >
-                  Save
-                </button>
-                <button
-                  type="button"
-                  onClick={handleResetPhoto}
-                  className="px-3 py-2 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold rounded-xl hover:bg-slate-300 transition-colors"
-                >
-                  Reset
-                </button>
-              </div>
-            </form>
-          )}
+
 
           {/* About Bio Section */}
           <div className="mb-6 bg-slate-50 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 sm:p-5">
