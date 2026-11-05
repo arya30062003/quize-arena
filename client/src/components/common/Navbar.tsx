@@ -7,9 +7,10 @@ import { useSocket } from '../../context/SocketContext';
 interface NavbarProps {
   currentView: string;
   onNavigate: (view: 'join' | 'dashboard' | 'editor') => void;
+  onOpenPortfolio: () => void;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate }) => {
+export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, onOpenPortfolio }) => {
   const { isConnected } = useSocket();
 
   return (
@@ -58,6 +59,22 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate }) => {
             >
               <Gamepad2 className="w-4 h-4" />
               <span>Host Arena</span>
+            </button>
+
+            <button
+              onClick={onOpenPortfolio}
+              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-pink-500/10 hover:from-indigo-500/20 hover:to-pink-500/20 text-indigo-700 dark:text-indigo-300 border border-indigo-200/80 dark:border-indigo-800 transition-all transform hover:scale-105 active:scale-95 shadow-sm"
+              title="View Developer Portfolio - Aryan Kewte"
+            >
+              <img
+                src="https://github.com/arya30062003.png"
+                alt="Aryan Kewte"
+                className="w-5 h-5 rounded-full object-cover ring-1 ring-indigo-500"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = 'https://api.dicebear.com/7.x/bottts/svg?seed=AryanKewte';
+                }}
+              />
+              <span className="hidden sm:inline">Developer</span>
             </button>
           </nav>
 

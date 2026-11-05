@@ -17,6 +17,7 @@ import { PlayerAnswerFeedback } from './components/player/PlayerAnswerFeedback';
 import { PlayerLeaderboard } from './components/player/PlayerLeaderboard';
 import { PlayerPodium } from './components/player/PlayerPodium';
 import { WhatsAppChat } from './components/common/WhatsAppChat';
+import { DeveloperPortfolio } from './components/common/DeveloperPortfolio';
 
 import { useSocket } from './context/SocketContext';
 import { Participant, Question, QuestionDistribution, LeaderboardEntry } from './types';
@@ -75,11 +76,13 @@ export const App: React.FC = () => {
   // Pre-filled PIN from URL query param
   const [initialPin, setInitialPin] = useState('');
   const [initialChatKey, setInitialChatKey] = useState('');
+  const [isPortfolioOpen, setIsPortfolioOpen] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const pinParam = params.get('pin');
     const keyParam = params.get('chatKey') || params.get('key');
+    const portfolioParam = params.get('portfolio');
     if (pinParam) {
       setInitialPin(pinParam);
       setCurrentView('join');
@@ -87,6 +90,9 @@ export const App: React.FC = () => {
     if (keyParam) {
       setInitialChatKey(keyParam);
       setCurrentView('join');
+    }
+    if (portfolioParam === 'true' || window.location.hash === '#developer') {
+      setIsPortfolioOpen(true);
     }
   }, []);
 
@@ -337,6 +343,7 @@ export const App: React.FC = () => {
             setCurrentView('editor');
           }
         }}
+        onOpenPortfolio={() => setIsPortfolioOpen(true)}
       />
 
       <main className="flex-1">
@@ -542,6 +549,28 @@ export const App: React.FC = () => {
           />
         )}
       </main>
+
+      {/* Developer Portfolio Modal */}
+      <DeveloperPortfolio
+        isOpen={isPortfolioOpen}
+        onClose={() => setIsPortfolioOpen(false)}
+      />
+
+      {/* App Footer */}
+      <footer className="py-4 text-center text-xs text-slate-500 dark:text-slate-400 border-t border-slate-200/60 dark:border-slate-800/60 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm">
+        <p className="flex items-center justify-center gap-1.5 flex-wrap">
+          <span>Quiz Arena PRO • Crafted with passion by</span>
+          <button
+            onClick={() => setIsPortfolioOpen(true)}
+            className="font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300 underline underline-offset-2 flex items-center gap-1"
+          >
+            <span>Aryan Kewte</span>
+            <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300">
+              View Portfolio 👨‍💻
+            </span>
+          </button>
+        </p>
+      </footer>
     </div>
   );
 };
