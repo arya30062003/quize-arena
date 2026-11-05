@@ -109,6 +109,15 @@ export interface ChatMessage {
   timestamp: number;
   recipientId?: string;
   recipientNickname?: string;
+  mediaType?: 'image' | 'audio' | 'video';
+  mediaUrl?: string;
+  mediaName?: string;
+  replyTo?: {
+    id: string;
+    senderNickname: string;
+    text: string;
+    mediaType?: 'image' | 'audio' | 'video';
+  };
 }
 
 export interface InstantChatMember {

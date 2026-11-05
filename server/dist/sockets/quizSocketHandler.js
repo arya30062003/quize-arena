@@ -264,10 +264,10 @@ function setupQuizSockets(io) {
         });
         // --- WhatsApp-Style Real-Time Messaging ---
         socket.on('send_chat_message', (payload) => {
-            const { pin, senderId, senderNickname, senderAvatar, senderEmoji, text, recipientId, recipientNickname } = payload;
-            if (!pin || !text || !text.trim())
+            const { pin, senderId, senderNickname, senderAvatar, senderEmoji, text, recipientId, recipientNickname, mediaType, mediaUrl, mediaName, replyTo } = payload;
+            if (!pin || (!text?.trim() && !mediaUrl))
                 return;
-            const cleanText = text.trim().slice(0, 500);
+            const cleanText = text ? text.trim().slice(0, 1000) : '';
             const session = sessionManager.getSessionByPin(pin);
             if (!session)
                 return;
@@ -281,7 +281,11 @@ function setupQuizSockets(io) {
                 text: cleanText,
                 timestamp: Date.now(),
                 recipientId: recipientId || undefined,
-                recipientNickname: recipientNickname || undefined
+                recipientNickname: recipientNickname || undefined,
+                mediaType,
+                mediaUrl,
+                mediaName,
+                replyTo
             };
             // Store in session manager
             sessionManager.addChatMessage(pin, chatMsg);
@@ -309,6 +313,51 @@ function setupQuizSockets(io) {
                 // Room Group Chat: broadcast to everyone in the room
                 const room = `quiz:${session.pin}`;
                 io.to(room).emit('chat_message_received', chatMsg);
+            }
+        });
+        // Typing indicators for Quiz session chat
+        socket.on('chat_typing_start', (payload) => {
+            const session = sessionManager.getSessionByPin(payload.pin);
+            if (!session)
+                return;
+            if (payload.recipientId) {
+                const targetId = payload.recipientId === 'host' ? session.hostSocketId : session.participants.get(payload.recipientId)?.socketId;
+                if (targetId) {
+                    io.to(targetId).emit('chat_typing_update', {
+                        senderId: payload.senderId,
+                        senderNickname: payload.senderNickname,
+                        isTyping: true,
+                        recipientId: payload.recipientId
+                    });
+                }
+            }
+            else {
+                socket.to(`quiz:${payload.pin}`).emit('chat_typing_update', {
+                    senderId: payload.senderId,
+                    senderNickname: payload.senderNickname,
+                    isTyping: true
+                });
+            }
+        });
+        socket.on('chat_typing_stop', (payload) => {
+            const session = sessionManager.getSessionByPin(payload.pin);
+            if (!session)
+                return;
+            if (payload.recipientId) {
+                const targetId = payload.recipientId === 'host' ? session.hostSocketId : session.participants.get(payload.recipientId)?.socketId;
+                if (targetId) {
+                    io.to(targetId).emit('chat_typing_update', {
+                        senderId: payload.senderId,
+                        isTyping: false,
+                        recipientId: payload.recipientId
+                    });
+                }
+            }
+            else {
+                socket.to(`quiz:${payload.pin}`).emit('chat_typing_update', {
+                    senderId: payload.senderId,
+                    isTyping: false
+                });
             }
         });
         socket.on('get_chat_history', (payload) => {
@@ -344,10 +393,10 @@ function setupQuizSockets(io) {
             console.log(`[Socket] Member "${member.nickname}" joined instant chat key: ${room.chatKey}`);
         });
         socket.on('send_instant_chat_message', (payload) => {
-            const { chatKey, text, senderId, senderNickname, senderAvatar, senderEmoji } = payload;
-            if (!chatKey || !text || !text.trim())
+            const { chatKey, text, senderId, senderNickname, senderAvatar, senderEmoji, mediaType, mediaUrl, mediaName, replyTo } = payload;
+            if (!chatKey || (!text?.trim() && !mediaUrl))
                 return;
-            const cleanText = text.trim().slice(0, 500);
+            const cleanText = text ? text.trim().slice(0, 1000) : '';
             const cleanKey = chatKey.trim().toUpperCase();
             const chatMsg = {
                 id: (0, uuid_1.v4)(),
@@ -357,11 +406,125 @@ function setupQuizSockets(io) {
                 senderAvatar,
                 senderEmoji,
                 text: cleanText,
-                timestamp: Date.now()
+                timestamp: Date.now(),
+                mediaType,
+                mediaUrl,
+                mediaName,
+                replyTo
             };
             sessionManager.addInstantChatMessage(cleanKey, chatMsg);
             const roomChannel = `instant:${cleanKey}`;
             io.to(roomChannel).emit('instant_chat_message_received', chatMsg);
+        });
+        // Instant Chat Typing Indicators
+        socket.on('instant_chat_typing_start', (payload) => {
+            const cleanKey = payload.chatKey?.trim().toUpperCase();
+            if (!cleanKey)
+                return;
+            socket.to(`instant:${cleanKey}`).emit('instant_chat_typing_update', {
+                senderId: payload.senderId,
+                senderNickname: payload.senderNickname,
+                isTyping: true
+            });
+        });
+        socket.on('instant_chat_typing_stop', (payload) => {
+            const cleanKey = payload.chatKey?.trim().toUpperCase();
+            if (!cleanKey)
+                return;
+            socket.to(`instant:${cleanKey}`).emit('instant_chat_typing_update', {
+                senderId: payload.senderId,
+                isTyping: false
+            });
+        });
+        // --- WebRTC Real-Time Audio & Video Calling Signaling ---
+        socket.on('webrtc_call_user', (payload) => {
+            const { channel, callerId, callerNickname, callerEmoji, recipientId, isVideo, offer } = payload;
+            console.log(`[WebRTC] Incoming ${isVideo ? 'video' : 'voice'} call from ${callerNickname} in ${channel}`);
+            if (recipientId) {
+                // Direct peer call
+                let targetSocketId;
+                // Check active session first
+                const pin = channel.replace('quiz:', '');
+                const session = sessionManager.getSessionByPin(pin);
+                if (session) {
+                    targetSocketId = recipientId === 'host' ? session.hostSocketId : session.participants.get(recipientId)?.socketId;
+                }
+                if (targetSocketId) {
+                    io.to(targetSocketId).emit('webrtc_incoming_call', {
+                        callerId,
+                        callerNickname,
+                        callerEmoji,
+                        callerSocketId: socket.id,
+                        isVideo,
+                        offer,
+                        channel
+                    });
+                    return;
+                }
+            }
+            // Channel / room broadcast to other peers
+            socket.to(channel).emit('webrtc_incoming_call', {
+                callerId,
+                callerNickname,
+                callerEmoji,
+                callerSocketId: socket.id,
+                isVideo,
+                offer,
+                channel
+            });
+        });
+        socket.on('webrtc_answer_call', (payload) => {
+            const { targetSocketId, responderId, responderNickname, answer, channel } = payload;
+            console.log(`[WebRTC] Call answered by ${responderNickname}`);
+            if (targetSocketId) {
+                io.to(targetSocketId).emit('webrtc_call_answered', {
+                    responderId,
+                    responderNickname,
+                    responderSocketId: socket.id,
+                    answer,
+                    channel
+                });
+            }
+            else if (channel) {
+                socket.to(channel).emit('webrtc_call_answered', {
+                    responderId,
+                    responderNickname,
+                    responderSocketId: socket.id,
+                    answer,
+                    channel
+                });
+            }
+        });
+        socket.on('webrtc_ice_candidate', (payload) => {
+            const { targetSocketId, candidate, channel } = payload;
+            if (targetSocketId) {
+                io.to(targetSocketId).emit('webrtc_ice_candidate_received', {
+                    candidate,
+                    senderSocketId: socket.id
+                });
+            }
+            else if (channel) {
+                socket.to(channel).emit('webrtc_ice_candidate_received', {
+                    candidate,
+                    senderSocketId: socket.id
+                });
+            }
+        });
+        socket.on('webrtc_end_call', (payload) => {
+            const { targetSocketId, channel } = payload;
+            if (targetSocketId) {
+                io.to(targetSocketId).emit('webrtc_call_ended');
+            }
+            if (channel) {
+                socket.to(channel).emit('webrtc_call_ended');
+            }
+        });
+        socket.on('webrtc_reject_call', (payload) => {
+            if (payload.targetSocketId) {
+                io.to(payload.targetSocketId).emit('webrtc_call_rejected', {
+                    reason: payload.reason || 'User declined the call.'
+                });
+            }
         });
         socket.on('leave_instant_chat', () => {
             const result = sessionManager.leaveInstantChat(socket.id);
