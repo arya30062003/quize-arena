@@ -1,5 +1,5 @@
-import React from 'react';
-import { Trophy, ArrowRight, Flame, Medal, Award } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { Trophy, ArrowRight, ArrowUp, Flame, Medal, Award, Sparkles } from 'lucide-react';
 import { LeaderboardEntry } from '../../types';
 
 interface HostLeaderboardProps {
@@ -18,6 +18,42 @@ export const HostLeaderboard: React.FC<HostLeaderboardProps> = ({
   onEndQuiz
 }) => {
   const isFinal = currentQuestionIndex >= totalQuestions - 1;
+
+  // Track previous ranks to detect upward movement and climbing
+  const prevRanksRef = useRef<Map<string, number>>(new Map());
+  const [rankUpMap, setRankUpMap] = useState<Map<string, number>>(new Map());
+
+  useEffect(() => {
+    const newUps = new Map<string, number>();
+
+    leaderboard.forEach(entry => {
+      const prevRank = prevRanksRef.current.get(entry.participantId);
+      if (prevRank !== undefined && entry.rank < prevRank) {
+        const climbed = prevRank - entry.rank;
+        newUps.set(entry.participantId, climbed);
+      }
+    });
+
+    if (newUps.size > 0) {
+      setRankUpMap(prev => {
+        const merged = new Map(prev);
+        newUps.forEach((v, k) => merged.set(k, v));
+        return merged;
+      });
+
+      // Clear the climbing animation after 3.5 seconds
+      const timer = setTimeout(() => {
+        setRankUpMap(new Map());
+      }, 3500);
+
+      return () => clearTimeout(timer);
+    }
+
+    // Update reference for next question
+    leaderboard.forEach(entry => {
+      prevRanksRef.current.set(entry.participantId, entry.rank);
+    });
+  }, [leaderboard]);
 
   const getRankBadge = (rank: number) => {
     switch (rank) {
@@ -72,13 +108,15 @@ export const HostLeaderboard: React.FC<HostLeaderboardProps> = ({
 
       {/* Leaderboard entries */}
       <div className="my-8 space-y-3">
-        {leaderboard.map((entry, index) => {
-          const isTop3 = entry.rank <= 3;
+        {leaderboard.map((entry) => {
+          const climbed = rankUpMap.get(entry.participantId);
           return (
             <div
               key={entry.participantId}
-              className={`flex items-center justify-between p-4 sm:p-5 rounded-2xl border transition-all transform hover:-translate-y-0.5 duration-200 ${
-                entry.rank === 1
+              className={`flex items-center justify-between p-4 sm:p-5 rounded-2xl border transition-all transform hover:-translate-y-0.5 duration-300 ${
+                climbed
+                  ? 'border-emerald-500 bg-gradient-to-r from-emerald-500/15 via-teal-500/10 to-transparent dark:from-emerald-950/40 ring-2 ring-emerald-500 shadow-xl shadow-emerald-500/20 scale-[1.01]'
+                  : entry.rank === 1
                   ? 'border-amber-400/80 bg-gradient-to-r from-amber-500/10 via-yellow-500/5 to-transparent dark:from-amber-950/30 shadow-md ring-1 ring-amber-400/50'
                   : entry.rank === 2
                   ? 'border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/60'
@@ -88,11 +126,24 @@ export const HostLeaderboard: React.FC<HostLeaderboardProps> = ({
               }`}
             >
               <div className="flex items-center gap-4">
-                {getRankBadge(entry.rank)}
+                <div className="relative">
+                  {getRankBadge(entry.rank)}
+                  {climbed ? (
+                    <div className="absolute -top-2 -right-2 bg-emerald-500 text-white rounded-full p-1 shadow-md animate-bounce ring-2 ring-white dark:ring-slate-900">
+                      <ArrowUp className="w-3.5 h-3.5 stroke-[3]" />
+                    </div>
+                  ) : null}
+                </div>
 
                 <div>
-                  <div className="flex items-center gap-2 font-bold text-slate-900 dark:text-white text-base sm:text-lg">
+                  <div className="flex items-center flex-wrap gap-2 font-bold text-slate-900 dark:text-white text-base sm:text-lg">
                     <span>{entry.nickname}</span>
+                    {climbed ? (
+                      <span className="flex items-center gap-1 text-xs font-black text-emerald-700 dark:text-emerald-300 px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/80 border border-emerald-400/60 animate-pulse">
+                        <ArrowUp className="w-3.5 h-3.5" />
+                        <span>+{climbed} {climbed === 1 ? 'Rank' : 'Ranks'} Up! 🚀</span>
+                      </span>
+                    ) : null}
                     {entry.streak >= 2 && (
                       <span className="flex items-center gap-0.5 text-xs font-black text-amber-500 px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/60">
                         <Flame className="w-3.5 h-3.5 fill-amber-500" />

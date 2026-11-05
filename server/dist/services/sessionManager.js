@@ -51,13 +51,42 @@ class SessionManager {
             responses: new Map(),
             questionStartTime: 0,
             questionEndTime: 0,
-            createdAt: Date.now(), usedEmojis: new Set()
+            createdAt: Date.now(),
+            usedEmojis: new Set(),
+            chatMessages: []
         };
         this.sessions.set(sessionId, session);
         this.pinIndex.set(pin, sessionId);
         this.hostSockets.set(hostSocketId, sessionId);
         console.log(`[SessionManager] Created session ${sessionId} with PIN ${pin} for quiz "${quiz.title}"`);
         return session;
+    }
+    /**
+     * Adds a chat message to session history (capped at last 100 messages)
+     */
+    addChatMessage(pin, message) {
+        const session = this.getSessionByPin(pin);
+        if (!session)
+            return;
+        if (!session.chatMessages) {
+            session.chatMessages = [];
+        }
+        session.chatMessages.push(message);
+        if (session.chatMessages.length > 100) {
+            session.chatMessages.shift();
+        }
+    }
+    /**
+     * Returns chat messages relevant to a user (all public group messages + their own private DMs)
+     */
+    getChatMessages(pin, participantId) {
+        const session = this.getSessionByPin(pin);
+        if (!session || !session.chatMessages)
+            return [];
+        if (!participantId) {
+            return session.chatMessages.filter(m => !m.recipientId);
+        }
+        return session.chatMessages.filter(m => !m.recipientId || m.senderId === participantId || m.recipientId === participantId);
     }
     getSessionById(sessionId) {
         return this.sessions.get(sessionId);

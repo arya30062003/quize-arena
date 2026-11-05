@@ -98,6 +98,19 @@ export interface LeaderboardEntry {
   isConnected: boolean;
 }
 
+export interface ChatMessage {
+  id: string;
+  pin: string;
+  senderId: string;
+  senderNickname: string;
+  senderAvatar?: string;
+  senderEmoji?: string;
+  text: string;
+  timestamp: number;
+  recipientId?: string;
+  recipientNickname?: string;
+}
+
 export interface ActiveSession {
   id: string;
   pin: string;
@@ -116,6 +129,7 @@ export interface ActiveSession {
   startedAt?: number;
   endedAt?: number;
   usedEmojis: Set<string>; // Track assigned emojis in this session
+  chatMessages: ChatMessage[];
 }
 
 export interface SessionAnalytics {

@@ -16,6 +16,7 @@ import { PlayerQuestionView } from './components/player/PlayerQuestionView';
 import { PlayerAnswerFeedback } from './components/player/PlayerAnswerFeedback';
 import { PlayerLeaderboard } from './components/player/PlayerLeaderboard';
 import { PlayerPodium } from './components/player/PlayerPodium';
+import { WhatsAppChat } from './components/common/WhatsAppChat';
 
 import { useSocket } from './context/SocketContext';
 import { Participant, Question, QuestionDistribution, LeaderboardEntry } from './types';
@@ -506,6 +507,31 @@ export const App: React.FC = () => {
                 setCurrentView('dashboard');
               }
             }}
+          />
+        )}
+
+        {/* WhatsApp Real-Time Messaging Widget (Group Lounge & 1-on-1 Private DMs) */}
+        {((currentView === 'host_arena' && hostSession) || (currentView === 'player_arena' && playerSession)) && (
+          <WhatsAppChat
+            pin={hostSession?.pin || playerSession?.pin || ''}
+            currentUser={
+              currentView === 'host_arena' && hostSession
+                ? {
+                    id: 'host',
+                    nickname: 'Host (Organizer)',
+                    emoji: '👑',
+                    isHost: true
+                  }
+                : {
+                    id: playerSession!.participant.id,
+                    nickname: playerSession!.participant.nickname,
+                    avatar: playerSession!.participant.avatar,
+                    emoji: playerSession!.participant.emoji,
+                    isHost: false
+                  }
+            }
+            participants={hostParticipants}
+            socket={socket}
           />
         )}
       </main>

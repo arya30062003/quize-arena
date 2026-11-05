@@ -1,6 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import {
   ActiveSession,
+  ChatMessage,
   ClientQuestion,
   LeaderboardEntry,
   Participant,
@@ -67,7 +68,9 @@ export class SessionManager {
       responses: new Map(),
       questionStartTime: 0,
       questionEndTime: 0,
-      createdAt: Date.now(), usedEmojis: new Set()
+      createdAt: Date.now(),
+      usedEmojis: new Set(),
+      chatMessages: []
     };
 
     this.sessions.set(sessionId, session);
@@ -76,6 +79,35 @@ export class SessionManager {
 
     console.log(`[SessionManager] Created session ${sessionId} with PIN ${pin} for quiz "${quiz.title}"`);
     return session;
+  }
+
+  /**
+   * Adds a chat message to session history (capped at last 100 messages)
+   */
+  public addChatMessage(pin: string, message: ChatMessage): void {
+    const session = this.getSessionByPin(pin);
+    if (!session) return;
+    if (!session.chatMessages) {
+      session.chatMessages = [];
+    }
+    session.chatMessages.push(message);
+    if (session.chatMessages.length > 100) {
+      session.chatMessages.shift();
+    }
+  }
+
+  /**
+   * Returns chat messages relevant to a user (all public group messages + their own private DMs)
+   */
+  public getChatMessages(pin: string, participantId?: string): ChatMessage[] {
+    const session = this.getSessionByPin(pin);
+    if (!session || !session.chatMessages) return [];
+    if (!participantId) {
+      return session.chatMessages.filter(m => !m.recipientId);
+    }
+    return session.chatMessages.filter(m =>
+      !m.recipientId || m.senderId === participantId || m.recipientId === participantId
+    );
   }
 
   public getSessionById(sessionId: string): ActiveSession | undefined {

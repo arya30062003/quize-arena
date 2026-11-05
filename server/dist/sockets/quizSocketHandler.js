@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.setupQuizSockets = setupQuizSockets;
+const uuid_1 = require("uuid");
 const sessionManager_1 = require("../services/sessionManager");
 function setupQuizSockets(io) {
     const sessionManager = sessionManager_1.SessionManager.getInstance();
@@ -38,6 +39,10 @@ function setupQuizSockets(io) {
             io.to(room).emit('participant_list_update', {
                 count: session.participants.size,
                 participants: participantsList
+            });
+            // Send recent chat history
+            socket.emit('chat_history', {
+                messages: sessionManager.getChatMessages(session.pin, participant.id)
             });
             console.log(`[Socket] Participant "${participant.nickname}" joined room ${room}`);
         });
@@ -99,6 +104,10 @@ function setupQuizSockets(io) {
                 count: session.participants.size,
                 participants: participantsList
             });
+            // Send chat history on reconnect
+            socket.emit('chat_history', {
+                messages: sessionManager.getChatMessages(session.pin, participant.id)
+            });
             console.log(`[Socket] Participant "${participant.nickname}" reconnected to ${room}`);
         });
         // --- Host Joins Room ---
@@ -120,6 +129,10 @@ function setupQuizSockets(io) {
                 socket.emit('participant_list_update', {
                     count: session.participants.size,
                     participants: participantsList
+                });
+                // Send chat history to host
+                socket.emit('chat_history', {
+                    messages: sessionManager.getChatMessages(session.pin, 'host')
                 });
             }
         });
@@ -248,6 +261,62 @@ function setupQuizSockets(io) {
                     participants: participantsList
                 });
             }
+        });
+        // --- WhatsApp-Style Real-Time Messaging ---
+        socket.on('send_chat_message', (payload) => {
+            const { pin, senderId, senderNickname, senderAvatar, senderEmoji, text, recipientId, recipientNickname } = payload;
+            if (!pin || !text || !text.trim())
+                return;
+            const cleanText = text.trim().slice(0, 500);
+            const session = sessionManager.getSessionByPin(pin);
+            if (!session)
+                return;
+            const chatMsg = {
+                id: (0, uuid_1.v4)(),
+                pin,
+                senderId: senderId || 'anonymous',
+                senderNickname: senderNickname || 'Participant',
+                senderAvatar,
+                senderEmoji,
+                text: cleanText,
+                timestamp: Date.now(),
+                recipientId: recipientId || undefined,
+                recipientNickname: recipientNickname || undefined
+            };
+            // Store in session manager
+            sessionManager.addChatMessage(pin, chatMsg);
+            if (recipientId) {
+                // 1-on-1 Direct Message
+                let targetSocketId;
+                if (recipientId === 'host') {
+                    targetSocketId = session.hostSocketId;
+                }
+                else {
+                    const targetParticipant = session.participants.get(recipientId);
+                    if (targetParticipant) {
+                        targetSocketId = targetParticipant.socketId;
+                    }
+                }
+                if (targetSocketId) {
+                    io.to(targetSocketId).emit('chat_message_received', chatMsg);
+                }
+                // Also echo back to sender socket so sender gets immediate confirmation with server ID & timestamp
+                if (socket.id !== targetSocketId) {
+                    socket.emit('chat_message_received', chatMsg);
+                }
+            }
+            else {
+                // Room Group Chat: broadcast to everyone in the room
+                const room = `quiz:${session.pin}`;
+                io.to(room).emit('chat_message_received', chatMsg);
+            }
+        });
+        socket.on('get_chat_history', (payload) => {
+            const { pin, participantId } = payload;
+            if (!pin)
+                return;
+            const messages = sessionManager.getChatMessages(pin, participantId);
+            socket.emit('chat_history', { messages });
         });
         // --- Disconnect Handling ---
         socket.on('disconnect', () => {
