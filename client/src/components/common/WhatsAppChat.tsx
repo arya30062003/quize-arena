@@ -804,10 +804,10 @@ export const WhatsAppChat: React.FC<WhatsAppChatProps> = ({
 
   return (
     <>
-      {/* Floating WhatsApp Action Button */}
+      {/* Floating Arena Chat Action Button */}
       <button
         onClick={toggleOpen}
-        aria-label="Open WhatsApp Chat"
+        aria-label="Open Arena Chat"
         className="fixed bottom-5 right-5 z-40 flex items-center gap-2.5 px-4 py-3.5 rounded-full bg-[#25D366] hover:bg-[#20ba5c] text-white font-bold shadow-2xl shadow-emerald-600/40 transform hover:scale-105 active:scale-95 transition-all duration-200 group"
       >
         <div className="relative">
@@ -819,15 +819,15 @@ export const WhatsAppChat: React.FC<WhatsAppChatProps> = ({
           )}
         </div>
         <span className="hidden sm:inline font-heading text-sm font-black tracking-wide">
-          WhatsApp Chat
+          Arena Chat
         </span>
       </button>
 
-      {/* WhatsApp Window Drawer / Modal */}
+      {/* Arena Chat Window Drawer / Modal */}
       {isOpen && (
-        <div className="fixed bottom-20 right-4 sm:right-6 z-40 w-[94vw] sm:w-[420px] h-[600px] max-h-[85vh] flex flex-col rounded-3xl overflow-hidden shadow-2xl border border-slate-300 dark:border-slate-800 bg-[#EFEAE2] dark:bg-[#0B141A] transition-all animate-scale-up">
-          {/* WhatsApp Header */}
-          <div className="bg-[#075E54] dark:bg-[#1F2C34] text-white p-3.5 flex items-center justify-between shadow-md">
+        <div className="fixed inset-x-2 sm:inset-auto sm:right-6 bottom-3 sm:bottom-20 top-16 sm:top-auto z-40 sm:w-[420px] sm:h-[600px] sm:max-h-[85vh] flex flex-col rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl border border-slate-300 dark:border-slate-800 bg-[#EFEAE2] dark:bg-[#0B141A] transition-all animate-scale-up">
+          {/* Header */}
+          <div className="bg-[#075E54] dark:bg-[#1F2C34] text-white p-3 sm:p-3.5 flex items-center justify-between shadow-md">
             <div className="flex items-center gap-2.5 min-w-0">
               {activeTab === 'dm' && selectedRecipient ? (
                 <button

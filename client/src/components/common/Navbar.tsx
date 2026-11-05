@@ -15,66 +15,68 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, onOpenP
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-2.5 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         {/* Brand */}
         <div 
           onClick={() => onNavigate('dashboard')} 
-          className="flex items-center gap-3 cursor-pointer group"
+          className="flex items-center gap-2 sm:gap-3 cursor-pointer group shrink-0"
         >
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 flex items-center justify-center shadow-lg shadow-indigo-500/25 group-hover:scale-105 transition-transform">
-            <Trophy className="w-5 h-5 text-white" />
+          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 flex items-center justify-center shadow-lg shadow-indigo-500/25 group-hover:scale-105 transition-transform">
+            <Trophy className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
           </div>
           <div>
-            <span className="text-xl font-extrabold tracking-tight bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 dark:from-indigo-400 dark:via-purple-300 dark:to-pink-400 bg-clip-text text-transparent font-heading">
+            <span className="text-lg sm:text-xl font-extrabold tracking-tight bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 dark:from-indigo-400 dark:via-purple-300 dark:to-pink-400 bg-clip-text text-transparent font-heading">
               QuizArena
             </span>
-            <span className="hidden sm:inline-block ml-2 text-xs font-semibold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
+            <span className="hidden md:inline-block ml-1.5 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
               PRO
             </span>
           </div>
         </div>
 
         {/* Navigation & Actions */}
-        <div className="flex items-center gap-2 sm:gap-4">
-          <nav className="flex items-center gap-1 sm:gap-2 mr-2">
+        <div className="flex items-center gap-1.5 sm:gap-3">
+          <nav className="flex items-center gap-1 sm:gap-2">
             <button
               onClick={() => onNavigate('join')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold transition-all ${
+              className={`flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all ${
                 currentView === 'join'
                   ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/30'
                   : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
               }`}
+              title="Join Quiz"
             >
-              <UserPlus className="w-4 h-4" />
-              <span>Join Quiz</span>
+              <UserPlus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <span>Join<span className="hidden sm:inline"> Quiz</span></span>
             </button>
 
             <button
               onClick={() => onNavigate('dashboard')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold transition-all ${
+              className={`flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all ${
                 currentView === 'dashboard' || currentView === 'editor'
                   ? 'bg-purple-600 text-white shadow-md shadow-purple-500/30'
                   : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
               }`}
+              title="Host Arena"
             >
-              <Gamepad2 className="w-4 h-4" />
-              <span>Host Arena</span>
+              <Gamepad2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <span>Host<span className="hidden sm:inline"> Arena</span></span>
             </button>
 
             <button
               onClick={onOpenPortfolio}
-              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-pink-500/10 hover:from-indigo-500/20 hover:to-pink-500/20 text-indigo-700 dark:text-indigo-300 border border-indigo-200/80 dark:border-indigo-800 transition-all transform hover:scale-105 active:scale-95 shadow-sm"
+              className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-pink-500/10 hover:from-indigo-500/20 hover:to-pink-500/20 text-indigo-700 dark:text-indigo-300 border border-indigo-200/80 dark:border-indigo-800 transition-all transform hover:scale-105 active:scale-95 shadow-sm"
               title="View Developer Portfolio - Aryan Kewte"
             >
               <img
                 src="https://github.com/arya30062003.png"
                 alt="Aryan Kewte"
-                className="w-5 h-5 rounded-full object-cover ring-1 ring-indigo-500"
+                className="w-4 h-4 sm:w-5 sm:h-5 rounded-full object-cover ring-1 ring-indigo-500 shrink-0"
                 onError={(e) => {
                   (e.target as HTMLImageElement).src = 'https://api.dicebear.com/7.x/bottts/svg?seed=AryanKewte';
                 }}
               />
-              <span className="hidden sm:inline">Developer</span>
+              <span className="hidden md:inline">Developer</span>
             </button>
           </nav>
 

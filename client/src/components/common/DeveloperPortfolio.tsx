@@ -51,9 +51,9 @@ export const DeveloperPortfolio: React.FC<DeveloperPortfolioProps> = ({ isOpen, 
       status: 'Live & Scalable'
     },
     {
-      title: 'WhatsApp Real-Time Chat & Key Messaging',
-      desc: 'Authentic WhatsApp messenger with room lounge group chats, 1-on-1 private direct messaging, secret Chat Keys, double blue ticks, quick emoji reactions, and audio chimes.',
-      tags: ['WebSockets', 'WhatsApp UI', 'Real-Time', 'Audio API'],
+      title: 'Arena Connect & Real-Time Messaging',
+      desc: 'Authentic messaging platform with room lounge group chats, 1-on-1 private direct messaging, secret Chat Keys, WebRTC voice/video calls, screen sharing, double blue ticks, and media attachments.',
+      tags: ['WebSockets', 'WebRTC', 'Real-Time', 'Media & Voice'],
       icon: '💬',
       status: 'Production Feature'
     },
@@ -168,7 +168,7 @@ export const DeveloperPortfolio: React.FC<DeveloperPortfolioProps> = ({ isOpen, 
               <span>About Developer</span>
             </h3>
             <p className="text-sm leading-relaxed text-slate-700 dark:text-slate-300">
-              Hello! I'm <strong>Aryan Kewte</strong>, an enthusiastic Full-Stack Developer passionate about crafting modern, real-time web experiences. I architected and developed <strong>Quiz Arena</strong> from the ground up, implementing high-concurrency WebSocket state synchronization, anti-cheat validation, responsive gamified UIs, and full-featured instant WhatsApp messaging with secret keys.
+              Hello! I'm <strong>Aryan Kewte</strong>, an enthusiastic Full-Stack Developer passionate about crafting modern, real-time web experiences. I architected and developed <strong>Quiz Arena</strong> from the ground up, implementing high-concurrency WebSocket state synchronization, anti-cheat validation, responsive gamified UIs, and full-featured instant Arena Chat messaging with secret keys and WebRTC video/voice calls.
             </p>
           </div>
 

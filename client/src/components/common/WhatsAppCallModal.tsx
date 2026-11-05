@@ -229,7 +229,7 @@ export const WhatsAppCallModal: React.FC<WhatsAppCallModalProps> = ({
           height: 520
         });
         copyStylesToWindow(document, pipWin.document);
-        pipWin.document.title = `WhatsApp Call - ${remoteName}`;
+        pipWin.document.title = `Arena Call - ${remoteName}`;
         pipWin.addEventListener('pagehide', () => {
           setPipWindow(null);
         });
@@ -262,7 +262,7 @@ export const WhatsAppCallModal: React.FC<WhatsAppCallModalProps> = ({
       );
       if (popup) {
         copyStylesToWindow(document, popup.document);
-        popup.document.title = `WhatsApp Call - ${remoteName}`;
+        popup.document.title = `Arena Call - ${remoteName}`;
         popup.addEventListener('pagehide', () => {
           setPipWindow(null);
         });
@@ -571,14 +571,14 @@ export const WhatsAppCallModal: React.FC<WhatsAppCallModalProps> = ({
   // --- FULL CALL SCREEN MODAL ---
   return (
     <>
-      <div className="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-xl flex items-center justify-center p-3 sm:p-6 animate-fade-in">
-        <div className="relative w-full max-w-2xl h-[580px] max-h-[90vh] bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-2xl flex flex-col justify-between">
+      <div className="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-xl flex items-center justify-center p-2 sm:p-6 animate-fade-in">
+        <div className="relative w-full max-w-2xl h-[92vh] sm:h-[580px] sm:max-h-[90vh] bg-slate-900 border border-slate-800 rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl flex flex-col justify-between">
           {/* Top Call Header */}
-          <div className="p-4 z-20 flex items-center justify-between text-white bg-gradient-to-b from-black/80 to-transparent">
+          <div className="p-3 sm:p-4 z-20 flex items-center justify-between text-white bg-gradient-to-b from-black/80 to-transparent">
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
               <span className="text-xs font-black uppercase tracking-widest text-emerald-400">
-                WhatsApp {isVideo ? 'Video' : 'Voice'} Call
+                Arena {isVideo ? 'Video' : 'Voice'} Call
               </span>
             </div>
 
@@ -719,24 +719,24 @@ export const WhatsAppCallModal: React.FC<WhatsAppCallModalProps> = ({
           </div>
 
           {/* Bottom Control Actions */}
-          <div className="p-6 z-20 bg-gradient-to-t from-black/90 via-black/60 to-transparent flex items-center justify-center gap-4 sm:gap-6">
+          <div className="p-3 sm:p-6 z-20 bg-gradient-to-t from-black/90 via-black/60 to-transparent flex items-center justify-center gap-2 sm:gap-6">
             {callState === 'incoming' ? (
               /* Incoming Call Controls (Accept / Decline) */
-              <div className="flex items-center gap-8 animate-bounce">
+              <div className="flex items-center gap-6 sm:gap-8 animate-bounce">
                 <button
                   onClick={onEndCall}
-                  className="w-16 h-16 rounded-full bg-rose-600 hover:bg-rose-500 text-white flex items-center justify-center shadow-lg shadow-rose-600/40 transition-transform transform hover:scale-110 active:scale-95"
+                  className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-rose-600 hover:bg-rose-500 text-white flex items-center justify-center shadow-lg shadow-rose-600/40 transition-transform transform hover:scale-110 active:scale-95"
                   title="Decline Call"
                 >
-                  <PhoneOff className="w-7 h-7" />
+                  <PhoneOff className="w-6 h-6 sm:w-7 sm:h-7" />
                 </button>
 
                 <button
                   onClick={onAcceptCall}
-                  className="w-16 h-16 rounded-full bg-[#25D366] hover:bg-[#20ba5c] text-white flex items-center justify-center shadow-lg shadow-emerald-600/40 transition-transform transform hover:scale-110 active:scale-95"
+                  className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-[#25D366] hover:bg-[#20ba5c] text-white flex items-center justify-center shadow-lg shadow-emerald-600/40 transition-transform transform hover:scale-110 active:scale-95"
                   title="Accept Call"
                 >
-                  <Phone className="w-7 h-7" />
+                  <Phone className="w-6 h-6 sm:w-7 sm:h-7" />
                 </button>
               </div>
             ) : (
@@ -745,57 +745,57 @@ export const WhatsAppCallModal: React.FC<WhatsAppCallModalProps> = ({
                 {/* Toggle Microphone */}
                 <button
                   onClick={onToggleMute}
-                  className={`w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center transition-all ${
+                  className={`w-11 h-11 sm:w-14 sm:h-14 rounded-full flex items-center justify-center transition-all ${
                     isMuted ? 'bg-rose-600 text-white' : 'bg-white/20 hover:bg-white/30 text-white'
                   }`}
                   title={isMuted ? 'Unmute' : 'Mute'}
                 >
-                  {isMuted ? <MicOff className="w-6 h-6" /> : <Mic className="w-6 h-6" />}
+                  {isMuted ? <MicOff className="w-5 h-5 sm:w-6 sm:h-6" /> : <Mic className="w-5 h-5 sm:w-6 sm:h-6" />}
                 </button>
 
                 {/* Share Screen Button */}
                 {isVideo && onToggleScreenShare && (
                   <button
                     onClick={onToggleScreenShare}
-                    className={`w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center transition-all ${
+                    className={`w-11 h-11 sm:w-14 sm:h-14 rounded-full flex items-center justify-center transition-all ${
                       isScreenSharing
                         ? 'bg-emerald-600 text-white ring-4 ring-emerald-500/40 shadow-lg shadow-emerald-500/30'
                         : 'bg-white/20 hover:bg-white/30 text-white'
                     }`}
                     title={isScreenSharing ? 'Stop Sharing Screen' : 'Share Screen'}
                   >
-                    {isScreenSharing ? <ScreenShareOff className="w-6 h-6" /> : <ScreenShare className="w-6 h-6" />}
+                    {isScreenSharing ? <ScreenShareOff className="w-5 h-5 sm:w-6 sm:h-6" /> : <ScreenShare className="w-5 h-5 sm:w-6 sm:h-6" />}
                   </button>
                 )}
 
                 {/* Pop Out Outside Browser Button in Bottom Bar */}
                 <button
                   onClick={togglePopOut}
-                  className="w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center bg-emerald-600/80 hover:bg-emerald-500 text-white transition-all shadow-lg"
+                  className="w-11 h-11 sm:w-14 sm:h-14 rounded-full flex items-center justify-center bg-emerald-600/80 hover:bg-emerald-500 text-white transition-all shadow-lg"
                   title="Pop out video outside browser (Always on top)"
                 >
-                  <ExternalLink className="w-6 h-6" />
+                  <ExternalLink className="w-5 h-5 sm:w-6 sm:h-6" />
                 </button>
 
                 {/* End Call Button */}
                 <button
                   onClick={onEndCall}
-                  className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-rose-600 hover:bg-rose-500 text-white flex items-center justify-center shadow-xl shadow-rose-600/50 transition-transform transform hover:scale-110 active:scale-95"
+                  className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-rose-600 hover:bg-rose-500 text-white flex items-center justify-center shadow-xl shadow-rose-600/50 transition-transform transform hover:scale-110 active:scale-95"
                   title="End Call"
                 >
-                  <PhoneOff className="w-7 h-7" />
+                  <PhoneOff className="w-6 h-6 sm:w-7 sm:h-7" />
                 </button>
 
                 {/* Toggle Video Camera (If Video mode) */}
                 {isVideo && (
                   <button
                     onClick={onToggleVideo}
-                    className={`w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center transition-all ${
+                    className={`w-11 h-11 sm:w-14 sm:h-14 rounded-full flex items-center justify-center transition-all ${
                       isVideoOff ? 'bg-rose-600 text-white' : 'bg-white/20 hover:bg-white/30 text-white'
                     }`}
                     title={isVideoOff ? 'Turn Camera On' : 'Turn Camera Off'}
                   >
-                    {isVideoOff ? <VideoOff className="w-6 h-6" /> : <Video className="w-6 h-6" />}
+                    {isVideoOff ? <VideoOff className="w-5 h-5 sm:w-6 sm:h-6" /> : <Video className="w-5 h-5 sm:w-6 sm:h-6" />}
                   </button>
                 )}
               </>

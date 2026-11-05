@@ -213,10 +213,10 @@ export const PlayerJoin: React.FC<PlayerJoinProps> = ({
     setActiveChat(null);
   };
 
-  // If currently active in an instant chat room, display the full WhatsApp chat room!
+  // If currently active in an instant chat room, display the full Arena chat room!
   if (activeChat) {
     return (
-      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-3 sm:px-4 py-6">
+      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center p-2 sm:px-4 sm:py-6">
         <InstantChatView
           chatKey={activeChat.chatKey}
           currentUser={activeChat.member}
@@ -230,8 +230,8 @@ export const PlayerJoin: React.FC<PlayerJoinProps> = ({
   }
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 py-8">
-      <div className="w-full max-w-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xl shadow-indigo-500/5">
+    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-3 sm:px-4 py-6 sm:py-8">
+      <div className="w-full max-w-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 sm:p-8 shadow-xl shadow-indigo-500/5">
         {/* Navigation Switcher Tabs */}
         <div className="flex p-1.5 rounded-2xl bg-slate-100 dark:bg-slate-800/80 mb-6">
           <button
@@ -240,7 +240,7 @@ export const PlayerJoin: React.FC<PlayerJoinProps> = ({
               setActiveTab('quiz');
               setError(null);
             }}
-            className={`flex-1 py-2.5 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all ${
+            className={`flex-1 py-2 sm:py-2.5 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 sm:gap-2 transition-all ${
               activeTab === 'quiz'
                 ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-sm'
                 : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
@@ -255,14 +255,14 @@ export const PlayerJoin: React.FC<PlayerJoinProps> = ({
               setActiveTab('chat');
               setChatError(null);
             }}
-            className={`flex-1 py-2.5 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all relative ${
+            className={`flex-1 py-2 sm:py-2.5 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 sm:gap-2 transition-all relative ${
               activeTab === 'chat'
-                ? 'bg-[#25D366] text-white shadow-md'
+                ? 'bg-emerald-600 text-white shadow-md'
                 : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
             <MessageCircle className="w-4 h-4 fill-current" />
-            <span>WhatsApp Chat</span>
+            <span>Arena Chat</span>
             <span className="w-2 h-2 rounded-full bg-emerald-400 absolute top-2 right-2 animate-pulse" />
           </button>
         </div>
@@ -362,15 +362,15 @@ export const PlayerJoin: React.FC<PlayerJoinProps> = ({
           </div>
         )}
 
-        {/* TAB 2: WHATSAPP INSTANT CHAT BY KEY */}
+        {/* TAB 2: ARENA INSTANT CHAT BY KEY */}
         {activeTab === 'chat' && (
           <div>
             <div className="text-center mb-6">
-              <div className="w-14 h-14 rounded-2xl bg-[#25D366] text-white flex items-center justify-center mx-auto mb-3 shadow-lg shadow-emerald-500/25">
+              <div className="w-14 h-14 rounded-2xl bg-emerald-600 text-white flex items-center justify-center mx-auto mb-3 shadow-lg shadow-emerald-500/25">
                 <MessageCircle className="w-7 h-7 fill-current" />
               </div>
               <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white font-heading">
-                Instant WhatsApp Chat
+                Arena Instant Chat
               </h1>
               <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
                 Enter any <strong>Chat Key</strong> to chat in real-time instantly!
@@ -406,7 +406,7 @@ export const PlayerJoin: React.FC<PlayerJoinProps> = ({
                     onChange={e => setChatKey(e.target.value.toUpperCase())}
                     placeholder="E.G. CHAT-7742"
                     required
-                    className="w-full text-center text-xl sm:text-2xl tracking-wider font-black py-3 rounded-2xl border-2 border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:border-[#25D366] font-heading"
+                    className="w-full text-center text-xl sm:text-2xl tracking-wider font-black py-3 rounded-2xl border-2 border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500 font-heading"
                   />
                   <Key className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
                 </div>
@@ -424,7 +424,7 @@ export const PlayerJoin: React.FC<PlayerJoinProps> = ({
                     onChange={e => setChatNickname(e.target.value)}
                     placeholder="Enter your name"
                     required
-                    className="w-full pl-11 pr-4 py-3 rounded-2xl border-2 border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-bold text-base focus:outline-none focus:border-[#25D366]"
+                    className="w-full pl-11 pr-4 py-3 rounded-2xl border-2 border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-bold text-base focus:outline-none focus:border-emerald-500"
                   />
                   <User className="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
                 </div>
@@ -443,7 +443,7 @@ export const PlayerJoin: React.FC<PlayerJoinProps> = ({
                       onClick={() => setChatAvatar(av.id)}
                       className={`text-2xl p-2 rounded-xl transition-all ${
                         chatAvatar === av.id
-                          ? 'bg-[#25D366] text-white ring-2 ring-emerald-400 scale-110 shadow-md'
+                          ? 'bg-emerald-600 text-white ring-2 ring-emerald-400 scale-110 shadow-md'
                           : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700'
                       }`}
                       title={av.label}
@@ -457,7 +457,7 @@ export const PlayerJoin: React.FC<PlayerJoinProps> = ({
               <button
                 type="submit"
                 disabled={chatJoining || !isConnected}
-                className="w-full mt-4 flex items-center justify-center gap-2 py-4 rounded-2xl bg-[#25D366] hover:bg-[#20ba5c] text-white font-black text-lg shadow-lg shadow-emerald-600/30 transition-all transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
+                className="w-full mt-4 flex items-center justify-center gap-2 py-4 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-lg shadow-lg shadow-emerald-600/30 transition-all transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
               >
                 <MessageCircle className="w-5 h-5 fill-current" />
                 <span>{chatJoining ? 'Connecting to Room...' : 'Start Chat (Enter ↵)'}</span>
@@ -466,7 +466,7 @@ export const PlayerJoin: React.FC<PlayerJoinProps> = ({
 
             <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 text-center">
               <p className="text-[11px] text-slate-400">
-                💡 Anyone who enters this <strong>Key</strong> will join the same WhatsApp chat room instantly.
+                💡 Anyone who enters this <strong>Key</strong> will join the same Arena chat room instantly.
               </p>
             </div>
           </div>

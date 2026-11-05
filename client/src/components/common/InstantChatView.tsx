@@ -764,38 +764,38 @@ export const InstantChatView: React.FC<InstantChatViewProps> = ({
 
   return (
     <>
-      <div className="w-full max-w-2xl mx-auto h-[640px] max-h-[85vh] flex flex-col rounded-3xl overflow-hidden shadow-2xl border border-slate-300 dark:border-slate-800 bg-[#EFEAE2] dark:bg-[#0B141A] transition-all animate-scale-up">
-        {/* WhatsApp Teal Header */}
-        <div className="bg-[#075E54] dark:bg-[#1F2C34] text-white p-3.5 sm:p-4 flex items-center justify-between shadow-md">
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="w-11 h-11 rounded-full bg-[#128C7E] flex items-center justify-center text-xl font-black shrink-0 shadow-inner">
-              <MessageCircle className="w-6 h-6 text-white" />
+      <div className="w-full max-w-2xl mx-auto h-[calc(100dvh-5.5rem)] sm:h-[640px] sm:max-h-[85vh] flex flex-col rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl border border-slate-300 dark:border-slate-800 bg-[#EFEAE2] dark:bg-[#0B141A] transition-all animate-scale-up">
+        {/* Arena Chat Teal Header */}
+        <div className="bg-[#075E54] dark:bg-[#1F2C34] text-white p-2.5 sm:p-4 flex items-center justify-between shadow-md">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-[#128C7E] flex items-center justify-center text-lg sm:text-xl font-black shrink-0 shadow-inner">
+              <MessageCircle className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
             </div>
             <div className="min-w-0">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 sm:gap-2">
                 <h2 className="font-bold text-sm sm:text-base truncate leading-tight flex items-center gap-1.5">
-                  <span>WhatsApp Chat</span>
-                  <span className="bg-emerald-400 text-slate-950 font-black text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider flex items-center gap-0.5">
+                  <span>Arena Chat</span>
+                  <span className="bg-emerald-400 text-slate-950 font-black text-[9px] sm:text-[10px] px-1.5 sm:px-2 py-0.5 rounded-full uppercase tracking-wider flex items-center gap-0.5">
                     <Key className="w-2.5 h-2.5" />
                     {chatKey}
                   </span>
                 </h2>
               </div>
-              <p className="text-xs text-emerald-200/90 truncate flex items-center gap-1.5 mt-0.5">
+              <p className="text-[11px] sm:text-xs text-emerald-200/90 truncate flex items-center gap-1.5 mt-0.5">
                 <span className="w-2 h-2 rounded-full bg-[#25D366] inline-block animate-pulse" />
                 <span>{members.length} {members.length === 1 ? 'user' : 'users'} online</span>
                 <span className="text-emerald-400/60">•</span>
-                <span className="text-[11px] truncate">You are {currentUser.nickname} {currentUser.emoji}</span>
+                <span className="truncate">You are {currentUser.nickname} {currentUser.emoji}</span>
               </p>
             </div>
           </div>
 
           {/* Action Controls: Call Buttons, Share, Sound, Leave */}
-          <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
+          <div className="flex items-center gap-0.5 sm:gap-1.5 shrink-0">
             {/* Voice Call Button */}
             <button
               onClick={() => startCall(false)}
-              className="p-2 rounded-full hover:bg-white/10 text-emerald-100 transition-colors"
+              className="p-1.5 sm:p-2 rounded-full hover:bg-white/10 text-emerald-100 transition-colors"
               title="Start Voice Call"
             >
               <Phone className="w-4 h-4" />
@@ -804,7 +804,7 @@ export const InstantChatView: React.FC<InstantChatViewProps> = ({
             {/* Video Call Button */}
             <button
               onClick={() => startCall(true)}
-              className="p-2 rounded-full hover:bg-white/10 text-emerald-100 transition-colors"
+              className="p-1.5 sm:p-2 rounded-full hover:bg-white/10 text-emerald-100 transition-colors"
               title="Start Video Call"
             >
               <Video className="w-4 h-4" />
@@ -813,7 +813,7 @@ export const InstantChatView: React.FC<InstantChatViewProps> = ({
             {/* Share Key Link */}
             <button
               onClick={handleCopyLink}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-all"
+              className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-all"
               title="Copy invitation link with Key"
             >
               {copied ? <Check className="w-3.5 h-3.5 text-emerald-300" /> : <Copy className="w-3.5 h-3.5" />}
@@ -822,7 +822,7 @@ export const InstantChatView: React.FC<InstantChatViewProps> = ({
 
             <button
               onClick={() => setSoundEnabled(!soundEnabled)}
-              className="p-2 rounded-full hover:bg-white/10 text-emerald-100 transition-colors"
+              className="p-1.5 sm:p-2 rounded-full hover:bg-white/10 text-emerald-100 transition-colors"
               title={soundEnabled ? 'Mute chime' : 'Enable chime'}
             >
               {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4 text-rose-300" />}
@@ -830,7 +830,7 @@ export const InstantChatView: React.FC<InstantChatViewProps> = ({
 
             <button
               onClick={onLeave}
-              className="p-2 rounded-full hover:bg-rose-500/20 text-rose-200 hover:text-white transition-colors"
+              className="p-1.5 sm:p-2 rounded-full hover:bg-rose-500/20 text-rose-200 hover:text-white transition-colors"
               title="Leave Room"
             >
               <LogOut className="w-4 h-4" />
@@ -839,7 +839,7 @@ export const InstantChatView: React.FC<InstantChatViewProps> = ({
         </div>
 
         {/* Connected Members Pills Bar */}
-        <div className="bg-[#128C7E]/90 dark:bg-[#111B21] px-4 py-2 flex items-center gap-2 overflow-x-auto border-b border-[#075E54]/30 scrollbar-none text-xs">
+        <div className="bg-[#128C7E]/90 dark:bg-[#111B21] px-3 sm:px-4 py-1.5 sm:py-2 flex items-center gap-2 overflow-x-auto border-b border-[#075E54]/30 scrollbar-none text-xs">
           <Users className="w-3.5 h-3.5 text-emerald-200 shrink-0" />
           <span className="text-[11px] font-bold text-white/80 shrink-0">Members:</span>
           <div className="flex items-center gap-1.5">
@@ -861,7 +861,7 @@ export const InstantChatView: React.FC<InstantChatViewProps> = ({
         </div>
 
         {/* Messages Scroll Area */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-3">
+        <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3">
           {/* Date separator pill */}
           <div className="text-center my-1">
             <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 bg-white/80 dark:bg-[#182229] px-3.5 py-1 rounded-full shadow-sm uppercase tracking-wider">
@@ -872,7 +872,7 @@ export const InstantChatView: React.FC<InstantChatViewProps> = ({
           {/* Key Notice Banner */}
           <div className="bg-amber-50 dark:bg-[#182229] border border-amber-200/60 dark:border-amber-800/40 rounded-2xl p-2.5 text-center text-xs text-amber-800 dark:text-amber-200 font-medium flex items-center justify-center gap-2 shadow-sm">
             <Lock className="w-3.5 h-3.5 text-amber-600 shrink-0" />
-            <span>Real-time WhatsApp room for <strong>Key: {chatKey}</strong>. Send images, audio, video & calls!</span>
+            <span>Real-time Arena room for <strong>Key: {chatKey}</strong>. Send images, audio, video & calls!</span>
           </div>
 
           {messages.length === 0 ? (
@@ -1062,19 +1062,19 @@ export const InstantChatView: React.FC<InstantChatViewProps> = ({
         )}
 
         {/* Input Bar with Attachment, Voice Recorder & Enter Key Send */}
-        <div className="bg-[#F0F2F5] dark:bg-[#202C33] p-2.5 sm:p-3 border-t border-slate-200 dark:border-slate-800">
+        <div className="bg-[#F0F2F5] dark:bg-[#202C33] p-2 sm:p-3 border-t border-slate-200 dark:border-slate-800">
           {isRecording ? (
             /* Live Audio Recording Bar */
-            <div className="flex items-center justify-between gap-3 px-2 py-1 bg-rose-50 dark:bg-rose-950/40 rounded-full border border-rose-200 dark:border-rose-900 animate-pulse">
-              <div className="flex items-center gap-2 text-rose-600 dark:text-rose-400 font-bold text-xs sm:text-sm pl-2">
-                <span className="w-3 h-3 rounded-full bg-rose-600 animate-ping" />
-                <span>Recording Voice Note... {recordingSeconds}s</span>
+            <div className="flex items-center justify-between gap-2 px-2 py-1 bg-rose-50 dark:bg-rose-950/40 rounded-full border border-rose-200 dark:border-rose-900 animate-pulse">
+              <div className="flex items-center gap-1.5 sm:gap-2 text-rose-600 dark:text-rose-400 font-bold text-xs sm:text-sm pl-1 sm:pl-2 min-w-0">
+                <span className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-rose-600 animate-ping shrink-0" />
+                <span className="truncate">Recording... {recordingSeconds}s</span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 shrink-0">
                 <button
                   type="button"
                   onClick={cancelRecording}
-                  className="p-2 rounded-full hover:bg-rose-200 dark:hover:bg-rose-900/60 text-rose-600"
+                  className="p-1.5 sm:p-2 rounded-full hover:bg-rose-200 dark:hover:bg-rose-900/60 text-rose-600"
                   title="Cancel Recording"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -1082,7 +1082,7 @@ export const InstantChatView: React.FC<InstantChatViewProps> = ({
                 <button
                   type="button"
                   onClick={stopRecording}
-                  className="px-4 py-1.5 rounded-full bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs shadow-md"
+                  className="px-3 sm:px-4 py-1.5 rounded-full bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs shadow-md"
                   title="Finish & Attach"
                 >
                   Done
@@ -1091,25 +1091,25 @@ export const InstantChatView: React.FC<InstantChatViewProps> = ({
             </div>
           ) : (
             /* Standard Input Bar */
-            <form onSubmit={handleSendMessage} className="flex items-center gap-2">
+            <form onSubmit={handleSendMessage} className="flex items-center gap-1.5 sm:gap-2">
               {/* Emoji Button */}
               <button
                 type="button"
                 onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                className="p-2 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-300 transition-colors shrink-0"
+                className="p-1.5 sm:p-2 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-300 transition-colors shrink-0"
                 title="Emojis"
               >
-                <Smile className="w-5 h-5" />
+                <Smile className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
 
               {/* Media Attachment Paperclip Button */}
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="p-2 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-300 transition-colors shrink-0"
+                className="p-1.5 sm:p-2 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-300 transition-colors shrink-0"
                 title="Attach Image, Audio or Video"
               >
-                <Paperclip className="w-5 h-5" />
+                <Paperclip className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
 
               <input
@@ -1126,8 +1126,8 @@ export const InstantChatView: React.FC<InstantChatViewProps> = ({
                 type="text"
                 value={inputText}
                 onChange={handleInputChange}
-                placeholder="Type message... (Press Enter to send ↵)"
-                className="flex-1 px-4 py-2.5 text-xs sm:text-sm rounded-full bg-white dark:bg-[#111B21] text-slate-900 dark:text-white border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-[#25D366]"
+                placeholder="Message... (Enter ↵)"
+                className="flex-1 min-w-0 px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm rounded-full bg-white dark:bg-[#111B21] text-slate-900 dark:text-white border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-[#25D366]"
               />
 
               {/* Voice Note Mic Button or Send Button */}
@@ -1135,7 +1135,7 @@ export const InstantChatView: React.FC<InstantChatViewProps> = ({
                 <button
                   type="button"
                   onClick={startRecording}
-                  className="w-10 h-10 rounded-full bg-[#128C7E] hover:bg-[#075E54] text-white flex items-center justify-center shrink-0 shadow-md transition-all transform active:scale-95"
+                  className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#128C7E] hover:bg-[#075E54] text-white flex items-center justify-center shrink-0 shadow-md transition-all transform active:scale-95"
                   title="Record Voice Note"
                 >
                   <Mic className="w-4 h-4" />
@@ -1143,7 +1143,7 @@ export const InstantChatView: React.FC<InstantChatViewProps> = ({
               ) : (
                 <button
                   type="submit"
-                  className="w-10 h-10 rounded-full bg-[#25D366] hover:bg-[#20BA5C] text-white flex items-center justify-center shrink-0 shadow-md transition-all transform active:scale-95"
+                  className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#25D366] hover:bg-[#20BA5C] text-white flex items-center justify-center shrink-0 shadow-md transition-all transform active:scale-95"
                   title="Send message (Enter)"
                 >
                   <Send className="w-4 h-4 ml-0.5" />

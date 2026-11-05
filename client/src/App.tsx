@@ -440,7 +440,7 @@ export const App: React.FC = () => {
           </div>
         )}
 
-        {/* VIEW 4: Player Join / Instant WhatsApp Chat */}
+        {/* VIEW 4: Player Join / Instant Arena Chat */}
         {currentView === 'join' && (
           <PlayerJoin
             initialPin={initialPin}
@@ -524,7 +524,7 @@ export const App: React.FC = () => {
           />
         )}
 
-        {/* WhatsApp Real-Time Messaging Widget (Group Lounge & 1-on-1 Private DMs) */}
+        {/* Arena Connect / Real-Time Messaging Widget (Group Lounge & 1-on-1 Private DMs) */}
         {((currentView === 'host_arena' && hostSession) || (currentView === 'player_arena' && playerSession)) && (
           <WhatsAppChat
             pin={hostSession?.pin || playerSession?.pin || ''}
