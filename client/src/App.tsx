@@ -18,6 +18,9 @@ import { PlayerLeaderboard } from './components/player/PlayerLeaderboard';
 import { PlayerPodium } from './components/player/PlayerPodium';
 import { WhatsAppChat } from './components/common/WhatsAppChat';
 import { DeveloperPortfolio } from './components/common/DeveloperPortfolio';
+import { App as CapacitorApp } from '@capacitor/app';
+import { StatusBar, Style } from '@capacitor/status-bar';
+import { Capacitor } from '@capacitor/core';
 
 import { useSocket } from './context/SocketContext';
 import { Participant, Question, QuestionDistribution, LeaderboardEntry } from './types';
@@ -95,6 +98,40 @@ export const App: React.FC = () => {
       setIsPortfolioOpen(true);
     }
   }, []);
+
+  // Native Mobile App Integration (Status bar & Android Hardware Back Button)
+  useEffect(() => {
+    if (Capacitor.isNativePlatform()) {
+      StatusBar.setStyle({ style: Style.Dark }).catch(() => {});
+      StatusBar.setBackgroundColor({ color: '#0F172A' }).catch(() => {});
+
+      const backListener = CapacitorApp.addListener('backButton', ({ canGoBack }) => {
+        if (isPortfolioOpen) {
+          setIsPortfolioOpen(false);
+          return;
+        }
+        if (currentView === 'editor' || currentView === 'analytics') {
+          setCurrentView('dashboard');
+          return;
+        }
+        if (currentView === 'host_arena' || currentView === 'player_arena') {
+          if (window.confirm('Do you want to leave the current live game?')) {
+            setCurrentView('join');
+          }
+          return;
+        }
+        if (canGoBack) {
+          window.history.back();
+        } else {
+          CapacitorApp.exitApp();
+        }
+      });
+
+      return () => {
+        backListener.then(l => l.remove());
+      };
+    }
+  }, [isPortfolioOpen, currentView]);
 
   // Session Recovery on Refresh
   useEffect(() => {

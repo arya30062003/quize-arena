@@ -1,5 +1,5 @@
-import React from 'react';
-import { Sparkles, Trophy, UserPlus, Gamepad2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Sparkles, Trophy, UserPlus, Gamepad2, Smartphone, Download } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import { SoundToggle } from './SoundToggle';
 import { useSocket } from '../../context/SocketContext';
@@ -12,6 +12,36 @@ interface NavbarProps {
 
 export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, onOpenPortfolio }) => {
   const { isConnected } = useSocket();
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [isInstallable, setIsInstallable] = useState(false);
+
+  useEffect(() => {
+    // Check if already in standalone PWA or native app
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone;
+    if (isStandalone) return;
+
+    const handleBeforeInstallPrompt = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      setIsInstallable(true);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    };
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      setIsInstallable(false);
+      setDeferredPrompt(null);
+    }
+  };
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md">
@@ -79,6 +109,18 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, onOpenP
               <span className="hidden md:inline">Developer</span>
             </button>
           </nav>
+
+          {/* Install Mobile App Button (PWA) */}
+          {isInstallable && (
+            <button
+              onClick={handleInstallClick}
+              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full text-xs font-bold bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-md shadow-emerald-500/25 hover:from-emerald-400 hover:to-teal-400 transition-all transform hover:scale-105 active:scale-95 animate-pulse"
+              title="Install QuizArena onto your phone home screen"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span>Install<span className="hidden sm:inline"> App</span></span>
+            </button>
+          )}
 
           {/* Connection Status Indicator */}
           <div 
