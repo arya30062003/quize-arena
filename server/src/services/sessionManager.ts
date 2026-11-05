@@ -3,6 +3,8 @@ import {
   ActiveSession,
   ChatMessage,
   ClientQuestion,
+  InstantChatMember,
+  InstantChatRoom,
   LeaderboardEntry,
   Participant,
   ParticipantResponse,
@@ -24,6 +26,8 @@ export class SessionManager {
   private pinIndex: Map<string, string> = new Map(); // pin -> sessionId
   private socketToParticipant: Map<string, { sessionId: string; participantId: string }> = new Map();
   private hostSockets: Map<string, string> = new Map(); // socketId -> sessionId
+  private instantChatRooms: Map<string, InstantChatRoom> = new Map(); // chatKey -> InstantChatRoom
+  private socketToInstantMember: Map<string, { chatKey: string; memberId: string }> = new Map();
 
   private constructor() {}
 
@@ -108,6 +112,78 @@ export class SessionManager {
     return session.chatMessages.filter(m =>
       !m.recipientId || m.senderId === participantId || m.recipientId === participantId
     );
+  }
+
+  /**
+   * Joins or creates an instant chat room by key
+   */
+  public joinInstantChat(
+    chatKey: string,
+    nickname: string,
+    socketId: string,
+    avatar?: string,
+    emoji?: string
+  ): { member: InstantChatMember; room: InstantChatRoom } {
+    const cleanKey = chatKey.trim().toUpperCase();
+    let room = this.instantChatRooms.get(cleanKey);
+    if (!room) {
+      room = {
+        chatKey: cleanKey,
+        createdAt: Date.now(),
+        members: new Map(),
+        messages: []
+      };
+      this.instantChatRooms.set(cleanKey, room);
+    }
+
+    const memberId = uuidv4();
+    const assignedEmoji = emoji || EMOJIS[Math.floor(Math.random() * EMOJIS.length)];
+    const member: InstantChatMember = {
+      id: memberId,
+      socketId,
+      nickname: nickname.trim().slice(0, 25),
+      avatar,
+      emoji: assignedEmoji,
+      joinedAt: Date.now()
+    };
+
+    room.members.set(memberId, member);
+    this.socketToInstantMember.set(socketId, { chatKey: cleanKey, memberId });
+
+    return { member, room };
+  }
+
+  public addInstantChatMessage(chatKey: string, message: ChatMessage): void {
+    const cleanKey = chatKey.trim().toUpperCase();
+    const room = this.instantChatRooms.get(cleanKey);
+    if (!room) return;
+    room.messages.push(message);
+    if (room.messages.length > 100) {
+      room.messages.shift();
+    }
+  }
+
+  public getInstantChatMessages(chatKey: string): ChatMessage[] {
+    const cleanKey = chatKey.trim().toUpperCase();
+    const room = this.instantChatRooms.get(cleanKey);
+    return room ? [...room.messages] : [];
+  }
+
+  public getInstantChatMembers(chatKey: string): InstantChatMember[] {
+    const cleanKey = chatKey.trim().toUpperCase();
+    const room = this.instantChatRooms.get(cleanKey);
+    return room ? Array.from(room.members.values()) : [];
+  }
+
+  public leaveInstantChat(socketId: string): { chatKey: string; member?: InstantChatMember } | null {
+    const meta = this.socketToInstantMember.get(socketId);
+    if (!meta) return null;
+    this.socketToInstantMember.delete(socketId);
+    const room = this.instantChatRooms.get(meta.chatKey);
+    if (!room) return null;
+    const member = room.members.get(meta.memberId);
+    room.members.delete(meta.memberId);
+    return { chatKey: meta.chatKey, member };
   }
 
   public getSessionById(sessionId: string): ActiveSession | undefined {

@@ -111,6 +111,22 @@ export interface ChatMessage {
   recipientNickname?: string;
 }
 
+export interface InstantChatMember {
+  id: string;
+  socketId: string;
+  nickname: string;
+  avatar?: string;
+  emoji: string;
+  joinedAt: number;
+}
+
+export interface InstantChatRoom {
+  chatKey: string;
+  createdAt: number;
+  members: Map<string, InstantChatMember>;
+  messages: ChatMessage[];
+}
+
 export interface ActiveSession {
   id: string;
   pin: string;

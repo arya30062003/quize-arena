@@ -373,8 +373,96 @@ export function setupQuizSockets(io: Server) {
       socket.emit('chat_history', { messages });
     });
 
+    // --- Instant Key-Based Chat (Home Page) ---
+    socket.on('join_instant_chat', (payload: { chatKey: string; nickname: string; avatar?: string; emoji?: string }) => {
+      const { chatKey, nickname, avatar, emoji } = payload;
+      if (!chatKey || !nickname || !nickname.trim() || !chatKey.trim()) {
+        socket.emit('instant_chat_error', { message: 'Chat Key and Nickname are required.' });
+        return;
+      }
+
+      const { member, room } = sessionManager.joinInstantChat(chatKey, nickname, socket.id, avatar, emoji);
+      const roomChannel = `instant:${room.chatKey}`;
+      socket.join(roomChannel);
+
+      const membersList = sessionManager.getInstantChatMembers(room.chatKey);
+      const messagesList = sessionManager.getInstantChatMessages(room.chatKey);
+
+      socket.emit('instant_chat_joined', {
+        chatKey: room.chatKey,
+        member,
+        members: membersList,
+        messages: messagesList
+      });
+
+      io.to(roomChannel).emit('instant_chat_members_update', {
+        chatKey: room.chatKey,
+        count: membersList.length,
+        members: membersList
+      });
+
+      console.log(`[Socket] Member "${member.nickname}" joined instant chat key: ${room.chatKey}`);
+    });
+
+    socket.on('send_instant_chat_message', (payload: {
+      chatKey: string;
+      text: string;
+      senderId: string;
+      senderNickname: string;
+      senderAvatar?: string;
+      senderEmoji?: string;
+    }) => {
+      const { chatKey, text, senderId, senderNickname, senderAvatar, senderEmoji } = payload;
+      if (!chatKey || !text || !text.trim()) return;
+
+      const cleanText = text.trim().slice(0, 500);
+      const cleanKey = chatKey.trim().toUpperCase();
+
+      const chatMsg: ChatMessage = {
+        id: uuidv4(),
+        pin: cleanKey,
+        senderId: senderId || socket.id,
+        senderNickname: senderNickname || 'User',
+        senderAvatar,
+        senderEmoji,
+        text: cleanText,
+        timestamp: Date.now()
+      };
+
+      sessionManager.addInstantChatMessage(cleanKey, chatMsg);
+
+      const roomChannel = `instant:${cleanKey}`;
+      io.to(roomChannel).emit('instant_chat_message_received', chatMsg);
+    });
+
+    socket.on('leave_instant_chat', () => {
+      const result = sessionManager.leaveInstantChat(socket.id);
+      if (result) {
+        const roomChannel = `instant:${result.chatKey}`;
+        socket.leave(roomChannel);
+        const membersList = sessionManager.getInstantChatMembers(result.chatKey);
+        io.to(roomChannel).emit('instant_chat_members_update', {
+          chatKey: result.chatKey,
+          count: membersList.length,
+          members: membersList
+        });
+      }
+    });
+
     // --- Disconnect Handling ---
     socket.on('disconnect', () => {
+      // Clean up any instant chat participation
+      const instantLeave = sessionManager.leaveInstantChat(socket.id);
+      if (instantLeave) {
+        const roomChannel = `instant:${instantLeave.chatKey}`;
+        const membersList = sessionManager.getInstantChatMembers(instantLeave.chatKey);
+        io.to(roomChannel).emit('instant_chat_members_update', {
+          chatKey: instantLeave.chatKey,
+          count: membersList.length,
+          members: membersList
+        });
+      }
+
       const { sessionId, participant } = sessionManager.handleDisconnect(socket.id);
       if (sessionId && participant) {
         const session = sessionManager.getSessionById(sessionId);

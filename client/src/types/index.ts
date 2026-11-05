@@ -74,6 +74,14 @@ export interface ChatMessage {
   recipientNickname?: string;
 }
 
+export interface InstantChatMember {
+  id: string;
+  nickname: string;
+  avatar?: string;
+  emoji: string;
+  joinedAt: number;
+}
+
 export interface SessionAnalytics {
   sessionId: string;
   quizTitle: string;

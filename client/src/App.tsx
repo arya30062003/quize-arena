@@ -74,12 +74,18 @@ export const App: React.FC = () => {
 
   // Pre-filled PIN from URL query param
   const [initialPin, setInitialPin] = useState('');
+  const [initialChatKey, setInitialChatKey] = useState('');
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const pinParam = params.get('pin');
+    const keyParam = params.get('chatKey') || params.get('key');
     if (pinParam) {
       setInitialPin(pinParam);
+      setCurrentView('join');
+    }
+    if (keyParam) {
+      setInitialChatKey(keyParam);
       setCurrentView('join');
     }
   }, []);
@@ -427,10 +433,11 @@ export const App: React.FC = () => {
           </div>
         )}
 
-        {/* VIEW 4: Player Join */}
+        {/* VIEW 4: Player Join / Instant WhatsApp Chat */}
         {currentView === 'join' && (
           <PlayerJoin
             initialPin={initialPin}
+            initialChatKey={initialChatKey}
             onJoined={handlePlayerJoined}
           />
         )}

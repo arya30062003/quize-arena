@@ -12,6 +12,8 @@ class SessionManager {
     pinIndex = new Map(); // pin -> sessionId
     socketToParticipant = new Map();
     hostSockets = new Map(); // socketId -> sessionId
+    instantChatRooms = new Map(); // chatKey -> InstantChatRoom
+    socketToInstantMember = new Map();
     constructor() { }
     static getInstance() {
         if (!SessionManager.instance) {
@@ -87,6 +89,67 @@ class SessionManager {
             return session.chatMessages.filter(m => !m.recipientId);
         }
         return session.chatMessages.filter(m => !m.recipientId || m.senderId === participantId || m.recipientId === participantId);
+    }
+    /**
+     * Joins or creates an instant chat room by key
+     */
+    joinInstantChat(chatKey, nickname, socketId, avatar, emoji) {
+        const cleanKey = chatKey.trim().toUpperCase();
+        let room = this.instantChatRooms.get(cleanKey);
+        if (!room) {
+            room = {
+                chatKey: cleanKey,
+                createdAt: Date.now(),
+                members: new Map(),
+                messages: []
+            };
+            this.instantChatRooms.set(cleanKey, room);
+        }
+        const memberId = (0, uuid_1.v4)();
+        const assignedEmoji = emoji || EMOJIS[Math.floor(Math.random() * EMOJIS.length)];
+        const member = {
+            id: memberId,
+            socketId,
+            nickname: nickname.trim().slice(0, 25),
+            avatar,
+            emoji: assignedEmoji,
+            joinedAt: Date.now()
+        };
+        room.members.set(memberId, member);
+        this.socketToInstantMember.set(socketId, { chatKey: cleanKey, memberId });
+        return { member, room };
+    }
+    addInstantChatMessage(chatKey, message) {
+        const cleanKey = chatKey.trim().toUpperCase();
+        const room = this.instantChatRooms.get(cleanKey);
+        if (!room)
+            return;
+        room.messages.push(message);
+        if (room.messages.length > 100) {
+            room.messages.shift();
+        }
+    }
+    getInstantChatMessages(chatKey) {
+        const cleanKey = chatKey.trim().toUpperCase();
+        const room = this.instantChatRooms.get(cleanKey);
+        return room ? [...room.messages] : [];
+    }
+    getInstantChatMembers(chatKey) {
+        const cleanKey = chatKey.trim().toUpperCase();
+        const room = this.instantChatRooms.get(cleanKey);
+        return room ? Array.from(room.members.values()) : [];
+    }
+    leaveInstantChat(socketId) {
+        const meta = this.socketToInstantMember.get(socketId);
+        if (!meta)
+            return null;
+        this.socketToInstantMember.delete(socketId);
+        const room = this.instantChatRooms.get(meta.chatKey);
+        if (!room)
+            return null;
+        const member = room.members.get(meta.memberId);
+        room.members.delete(meta.memberId);
+        return { chatKey: meta.chatKey, member };
     }
     getSessionById(sessionId) {
         return this.sessions.get(sessionId);
