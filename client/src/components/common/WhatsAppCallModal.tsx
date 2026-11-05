@@ -10,6 +10,8 @@ import {
   Maximize2,
   Minimize2,
   ExternalLink,
+  ScreenShare,
+  ScreenShareOff,
   Tv
 } from 'lucide-react';
 
@@ -26,8 +28,10 @@ interface WhatsAppCallModalProps {
   callState: CallState;
   isMuted: boolean;
   isVideoOff: boolean;
+  isScreenSharing?: boolean;
   onToggleMute: () => void;
   onToggleVideo: () => void;
+  onToggleScreenShare?: () => void;
   onAcceptCall: () => void;
   onEndCall: () => void;
 }
@@ -83,8 +87,10 @@ export const WhatsAppCallModal: React.FC<WhatsAppCallModalProps> = ({
   callState,
   isMuted,
   isVideoOff,
+  isScreenSharing = false,
   onToggleMute,
   onToggleVideo,
+  onToggleScreenShare,
   onAcceptCall,
   onEndCall
 }) => {
@@ -342,7 +348,7 @@ export const WhatsAppCallModal: React.FC<WhatsAppCallModalProps> = ({
           </div>
 
           {/* Bottom Floating Mini Controls */}
-          <div className="relative z-20 p-2 flex items-center justify-center gap-3 bg-gradient-to-t from-black/90 to-transparent">
+          <div className="relative z-20 p-2 flex items-center justify-center gap-2.5 bg-gradient-to-t from-black/90 to-transparent">
             <button
               onClick={onToggleMute}
               className={`p-2 rounded-full transition-all ${
@@ -352,6 +358,21 @@ export const WhatsAppCallModal: React.FC<WhatsAppCallModalProps> = ({
             >
               {isMuted ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
             </button>
+
+            {/* Screen Share in Mini Card */}
+            {isVideo && onToggleScreenShare && (
+              <button
+                onClick={onToggleScreenShare}
+                className={`p-2 rounded-full transition-all ${
+                  isScreenSharing
+                    ? 'bg-emerald-600 text-white ring-2 ring-emerald-400'
+                    : 'bg-white/20 hover:bg-white/30 text-white'
+                }`}
+                title={isScreenSharing ? 'Stop Sharing Screen' : 'Share Screen'}
+              >
+                {isScreenSharing ? <ScreenShareOff className="w-3.5 h-3.5" /> : <ScreenShare className="w-3.5 h-3.5" />}
+              </button>
+            )}
 
             <button
               onClick={onEndCall}
@@ -464,7 +485,7 @@ export const WhatsAppCallModal: React.FC<WhatsAppCallModalProps> = ({
         </div>
 
         {/* Floating Controls Footer */}
-        <div className="p-3 z-20 flex items-center justify-center gap-4 bg-gradient-to-t from-black/90 via-black/70 to-transparent">
+        <div className="p-3 z-20 flex items-center justify-center gap-3 bg-gradient-to-t from-black/90 via-black/70 to-transparent">
           <button
             onClick={onToggleMute}
             className={`p-3 rounded-full transition-all ${
@@ -474,6 +495,20 @@ export const WhatsAppCallModal: React.FC<WhatsAppCallModalProps> = ({
           >
             {isMuted ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
           </button>
+
+          {isVideo && onToggleScreenShare && (
+            <button
+              onClick={onToggleScreenShare}
+              className={`p-3 rounded-full transition-all ${
+                isScreenSharing
+                  ? 'bg-emerald-600 text-white ring-2 ring-emerald-400'
+                  : 'bg-white/20 hover:bg-white/30 text-white'
+              }`}
+              title={isScreenSharing ? 'Stop Sharing Screen' : 'Share Screen'}
+            >
+              {isScreenSharing ? <ScreenShareOff className="w-4 h-4" /> : <ScreenShare className="w-4 h-4" />}
+            </button>
+          )}
 
           <button
             onClick={() => {
@@ -618,6 +653,22 @@ export const WhatsAppCallModal: React.FC<WhatsAppCallModalProps> = ({
               </div>
             )}
 
+            {/* Screen Sharing Indicator */}
+            {isScreenSharing && (
+              <div className="absolute top-4 left-4 z-20 px-3 py-1.5 rounded-full bg-emerald-600/90 text-white backdrop-blur-md shadow-lg flex items-center gap-2 text-xs font-bold animate-pulse border border-emerald-400/40">
+                <ScreenShare className="w-4 h-4 text-white" />
+                <span>You are sharing your screen</span>
+                {onToggleScreenShare && (
+                  <button
+                    onClick={onToggleScreenShare}
+                    className="ml-1 underline text-emerald-200 hover:text-white"
+                  >
+                    Stop
+                  </button>
+                )}
+              </div>
+            )}
+
             {/* Picture-in-Picture Local Camera Stream (If Video Mode) */}
             {isVideo && localStream && remoteStream && (
               <div className="absolute top-4 right-4 z-20 w-28 sm:w-36 h-40 rounded-2xl overflow-hidden shadow-2xl border-2 border-white/30 bg-black">
@@ -671,6 +722,21 @@ export const WhatsAppCallModal: React.FC<WhatsAppCallModalProps> = ({
                 >
                   {isMuted ? <MicOff className="w-6 h-6" /> : <Mic className="w-6 h-6" />}
                 </button>
+
+                {/* Share Screen Button */}
+                {isVideo && onToggleScreenShare && (
+                  <button
+                    onClick={onToggleScreenShare}
+                    className={`w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center transition-all ${
+                      isScreenSharing
+                        ? 'bg-emerald-600 text-white ring-4 ring-emerald-500/40 shadow-lg shadow-emerald-500/30'
+                        : 'bg-white/20 hover:bg-white/30 text-white'
+                    }`}
+                    title={isScreenSharing ? 'Stop Sharing Screen' : 'Share Screen'}
+                  >
+                    {isScreenSharing ? <ScreenShareOff className="w-6 h-6" /> : <ScreenShare className="w-6 h-6" />}
+                  </button>
+                )}
 
                 {/* Pop Out Outside Browser Button in Bottom Bar */}
                 <button

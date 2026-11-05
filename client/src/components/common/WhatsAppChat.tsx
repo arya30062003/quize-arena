@@ -119,6 +119,9 @@ export const WhatsAppChat: React.FC<WhatsAppChatProps> = ({
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
   const [isMuted, setIsMuted] = useState(false);
   const [isVideoOff, setIsVideoOff] = useState(false);
+  const [isScreenSharing, setIsScreenSharing] = useState(false);
+  const screenStreamRef = useRef<MediaStream | null>(null);
+  const originalCameraTrackRef = useRef<MediaStreamTrack | null>(null);
   const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -275,6 +278,13 @@ export const WhatsAppChat: React.FC<WhatsAppChatProps> = ({
 
   // Clean up WebRTC active call
   const cleanupCall = () => {
+    if (screenStreamRef.current) {
+      screenStreamRef.current.getTracks().forEach(t => t.stop());
+      screenStreamRef.current = null;
+    }
+    originalCameraTrackRef.current = null;
+    setIsScreenSharing(false);
+
     if (localStream) {
       localStream.getTracks().forEach(t => t.stop());
       setLocalStream(null);
@@ -426,6 +436,102 @@ export const WhatsAppChat: React.FC<WhatsAppChatProps> = ({
         videoTrack.enabled = !videoTrack.enabled;
         setIsVideoOff(!videoTrack.enabled);
       }
+    }
+  };
+
+  const toggleScreenShare = async () => {
+    if (isScreenSharing) {
+      await stopScreenShare();
+    } else {
+      await startScreenShare();
+    }
+  };
+
+  const startScreenShare = async () => {
+    try {
+      const screenStream = await navigator.mediaDevices.getDisplayMedia({
+        video: true,
+        audio: false
+      });
+
+      const screenTrack = screenStream.getVideoTracks()[0];
+      if (!screenTrack) return;
+
+      screenStreamRef.current = screenStream;
+
+      // Preserve current webcam video track if available
+      if (localStream) {
+        const currentCamTrack = localStream.getVideoTracks()[0];
+        if (currentCamTrack) {
+          originalCameraTrackRef.current = currentCamTrack;
+        }
+      }
+
+      // Replace track on WebRTC sender seamlessly
+      if (peerConnectionRef.current) {
+        const senders = peerConnectionRef.current.getSenders();
+        const videoSender = senders.find(s => s.track && s.track.kind === 'video');
+        if (videoSender) {
+          await videoSender.replaceTrack(screenTrack);
+        }
+      }
+
+      // Listen for browser native "Stop sharing" action
+      screenTrack.onended = () => {
+        stopScreenShare();
+      };
+
+      // Update local stream preview with screen track
+      if (localStream) {
+        const oldTracks = localStream.getVideoTracks();
+        oldTracks.forEach(t => localStream.removeTrack(t));
+        localStream.addTrack(screenTrack);
+        setLocalStream(new MediaStream(localStream.getTracks()));
+      }
+
+      setIsScreenSharing(true);
+    } catch (err) {
+      console.warn('Screen share cancelled or failed:', err);
+    }
+  };
+
+  const stopScreenShare = async () => {
+    try {
+      if (screenStreamRef.current) {
+        screenStreamRef.current.getTracks().forEach(t => t.stop());
+        screenStreamRef.current = null;
+      }
+
+      let cameraTrack = originalCameraTrackRef.current;
+      if (!cameraTrack || cameraTrack.readyState === 'ended') {
+        try {
+          const newCamStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+          cameraTrack = newCamStream.getVideoTracks()[0];
+          originalCameraTrackRef.current = cameraTrack;
+        } catch (e) {
+          console.warn('Could not re-acquire camera track:', e);
+        }
+      }
+
+      if (cameraTrack && peerConnectionRef.current) {
+        const senders = peerConnectionRef.current.getSenders();
+        const videoSender = senders.find(s => s.track && s.track.kind === 'video');
+        if (videoSender) {
+          await videoSender.replaceTrack(cameraTrack);
+        }
+      }
+
+      if (localStream && cameraTrack) {
+        const screenTracks = localStream.getVideoTracks();
+        screenTracks.forEach(t => localStream.removeTrack(t));
+        localStream.addTrack(cameraTrack);
+        setLocalStream(new MediaStream(localStream.getTracks()));
+      }
+
+      setIsScreenSharing(false);
+    } catch (err) {
+      console.error('Error stopping screen share:', err);
+      setIsScreenSharing(false);
     }
   };
 
@@ -1061,8 +1167,10 @@ export const WhatsAppChat: React.FC<WhatsAppChatProps> = ({
         callState={callState}
         isMuted={isMuted}
         isVideoOff={isVideoOff}
+        isScreenSharing={isScreenSharing}
         onToggleMute={toggleMute}
         onToggleVideo={toggleVideo}
+        onToggleScreenShare={toggleScreenShare}
         onAcceptCall={acceptCall}
         onEndCall={endCall}
       />
