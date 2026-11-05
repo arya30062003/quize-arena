@@ -123,6 +123,14 @@ export const WhatsAppChat: React.FC<WhatsAppChatProps> = ({
   const screenStreamRef = useRef<MediaStream | null>(null);
   const originalCameraTrackRef = useRef<MediaStreamTrack | null>(null);
   const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
+  const remoteCallerSocketIdRef = useRef<string>('');
+  const iceCandidateQueueRef = useRef<RTCIceCandidateInit[]>([]);
+  const callStateRef = useRef<CallState>('idle');
+
+  // Keep callStateRef synchronized
+  useEffect(() => {
+    callStateRef.current = callState;
+  }, [callState]);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -196,18 +204,22 @@ export const WhatsAppChat: React.FC<WhatsAppChatProps> = ({
       offer: any;
       channel: string;
     }) => {
-      if (callState !== 'idle') {
+      // Don't ring self if broadcast echoes
+      if (data.callerSocketId === socket.id || data.callerId === currentUser.id) return;
+
+      if (callStateRef.current !== 'idle') {
         socket.emit('webrtc_reject_call', {
           targetSocketId: data.callerSocketId,
           callerId: data.callerId,
-          reason: 'User is busy.'
+          reason: 'User is busy on another call.'
         });
         return;
       }
 
-      setRemoteCallerName(data.callerNickname);
-      setRemoteCallerEmoji(data.callerEmoji || '👤');
+      remoteCallerSocketIdRef.current = data.callerSocketId;
       setRemoteCallerSocketId(data.callerSocketId);
+      setRemoteCallerName(data.callerNickname || 'Remote User');
+      setRemoteCallerEmoji(data.callerEmoji || '👤');
       setIsVideoCall(data.isVideo);
       setIsCaller(false);
       setCallState('incoming');
@@ -216,18 +228,52 @@ export const WhatsAppChat: React.FC<WhatsAppChatProps> = ({
       (window as any)._pendingOffer = data.offer;
     };
 
-    const handleCallAnswered = async (data: { answer: any }) => {
-      if (peerConnectionRef.current) {
-        await peerConnectionRef.current.setRemoteDescription(new RTCSessionDescription(data.answer));
-        setCallState('connected');
+    const handleCallAnswered = async (data: {
+      responderId?: string;
+      responderNickname?: string;
+      responderSocketId?: string;
+      answer: any;
+    }) => {
+      if (data.responderSocketId) {
+        remoteCallerSocketIdRef.current = data.responderSocketId;
+        setRemoteCallerSocketId(data.responderSocketId);
+      }
+      if (data.responderNickname) {
+        setRemoteCallerName(data.responderNickname);
+      }
+
+      const pc = peerConnectionRef.current;
+      if (pc) {
+        try {
+          await pc.setRemoteDescription(new RTCSessionDescription(data.answer));
+
+          // Drain and add all queued ICE candidates received before the answer!
+          while (iceCandidateQueueRef.current.length > 0) {
+            const cand = iceCandidateQueueRef.current.shift();
+            if (cand) {
+              await pc.addIceCandidate(new RTCIceCandidate(cand)).catch(e => console.warn('Queued candidate error:', e));
+            }
+          }
+
+          setCallState('connected');
+        } catch (err) {
+          console.error('Failed to set remote description on caller:', err);
+        }
       }
     };
 
     const handleIceCandidate = async (data: { candidate: any }) => {
-      if (peerConnectionRef.current && data.candidate) {
+      if (!data.candidate) return;
+      const pc = peerConnectionRef.current;
+      if (pc && pc.remoteDescription && pc.remoteDescription.type) {
         try {
-          await peerConnectionRef.current.addIceCandidate(new RTCIceCandidate(data.candidate));
-        } catch (e) {}
+          await pc.addIceCandidate(new RTCIceCandidate(data.candidate));
+        } catch (e) {
+          console.warn('addIceCandidate error:', e);
+        }
+      } else {
+        // Queue candidate to safely apply as soon as remote description is set!
+        iceCandidateQueueRef.current.push(data.candidate);
       }
     };
 
@@ -294,10 +340,15 @@ export const WhatsAppChat: React.FC<WhatsAppChatProps> = ({
       setRemoteStream(null);
     }
     if (peerConnectionRef.current) {
-      peerConnectionRef.current.close();
+      try {
+        peerConnectionRef.current.close();
+      } catch (e) {}
       peerConnectionRef.current = null;
     }
+    remoteCallerSocketIdRef.current = '';
+    iceCandidateQueueRef.current = [];
     (window as any)._pendingOffer = null;
+    setRemoteCallerSocketId('');
     setCallState('idle');
     setCallModalOpen(false);
   };
@@ -306,8 +357,10 @@ export const WhatsAppChat: React.FC<WhatsAppChatProps> = ({
   const startCall = async (video: boolean) => {
     if (!socket) return;
     try {
+      cleanupCall();
+
       const stream = await navigator.mediaDevices.getUserMedia({
-        audio: true,
+        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
         video: video
       });
       setLocalStream(stream);
@@ -322,10 +375,17 @@ export const WhatsAppChat: React.FC<WhatsAppChatProps> = ({
 
       stream.getTracks().forEach(track => pc.addTrack(track, stream));
 
-      const inboundStream = new MediaStream();
-      setRemoteStream(inboundStream);
       pc.ontrack = event => {
-        event.streams[0]?.getTracks().forEach(track => inboundStream.addTrack(track));
+        console.log('[WebRTC Lounge Caller] ontrack received:', event.track.kind);
+        if (event.streams && event.streams[0]) {
+          setRemoteStream(event.streams[0]);
+        } else {
+          setRemoteStream(prev => {
+            const s = prev ? new MediaStream(prev.getTracks()) : new MediaStream();
+            s.addTrack(event.track);
+            return s;
+          });
+        }
       };
 
       pc.onicecandidate = event => {
@@ -333,7 +393,7 @@ export const WhatsAppChat: React.FC<WhatsAppChatProps> = ({
           socket.emit('webrtc_ice_candidate', {
             channel: `quiz:${pin}`,
             candidate: event.candidate,
-            targetSocketId: selectedRecipient ? (selectedRecipient as any).socketId : undefined
+            targetSocketId: remoteCallerSocketIdRef.current || (selectedRecipient ? (selectedRecipient as any).socketId : undefined)
           });
         }
       };
@@ -351,6 +411,7 @@ export const WhatsAppChat: React.FC<WhatsAppChatProps> = ({
         offer
       });
     } catch (err) {
+      console.error('Call failed to start in WhatsAppChat:', err);
       alert('Could not access microphone or camera. Please check browser permissions.');
       cleanupCall();
     }
@@ -364,7 +425,7 @@ export const WhatsAppChat: React.FC<WhatsAppChatProps> = ({
       if (!offer) return;
 
       const stream = await navigator.mediaDevices.getUserMedia({
-        audio: true,
+        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
         video: isVideoCall
       });
       setLocalStream(stream);
@@ -374,16 +435,25 @@ export const WhatsAppChat: React.FC<WhatsAppChatProps> = ({
 
       stream.getTracks().forEach(track => pc.addTrack(track, stream));
 
-      const inboundStream = new MediaStream();
-      setRemoteStream(inboundStream);
       pc.ontrack = event => {
-        event.streams[0]?.getTracks().forEach(track => inboundStream.addTrack(track));
+        console.log('[WebRTC Lounge Recipient] ontrack received:', event.track.kind);
+        if (event.streams && event.streams[0]) {
+          setRemoteStream(event.streams[0]);
+        } else {
+          setRemoteStream(prev => {
+            const s = prev ? new MediaStream(prev.getTracks()) : new MediaStream();
+            s.addTrack(event.track);
+            return s;
+          });
+        }
       };
+
+      const targetId = remoteCallerSocketIdRef.current || remoteCallerSocketId;
 
       pc.onicecandidate = event => {
         if (event.candidate) {
           socket.emit('webrtc_ice_candidate', {
-            targetSocketId: remoteCallerSocketId,
+            targetSocketId: targetId,
             channel: `quiz:${pin}`,
             candidate: event.candidate
           });
@@ -391,11 +461,20 @@ export const WhatsAppChat: React.FC<WhatsAppChatProps> = ({
       };
 
       await pc.setRemoteDescription(new RTCSessionDescription(offer));
+
+      // Flush queued candidates
+      while (iceCandidateQueueRef.current.length > 0) {
+        const cand = iceCandidateQueueRef.current.shift();
+        if (cand) {
+          await pc.addIceCandidate(new RTCIceCandidate(cand)).catch(e => console.warn('Queued candidate error:', e));
+        }
+      }
+
       const answer = await pc.createAnswer();
       await pc.setLocalDescription(answer);
 
       socket.emit('webrtc_answer_call', {
-        targetSocketId: remoteCallerSocketId,
+        targetSocketId: targetId,
         responderId: currentUser.id,
         responderNickname: currentUser.nickname,
         answer,
@@ -404,6 +483,7 @@ export const WhatsAppChat: React.FC<WhatsAppChatProps> = ({
 
       setCallState('connected');
     } catch (err) {
+      console.error('Could not accept call:', err);
       alert('Could not access camera/microphone to accept the call.');
       cleanupCall();
     }
@@ -412,7 +492,7 @@ export const WhatsAppChat: React.FC<WhatsAppChatProps> = ({
   const endCall = () => {
     if (socket) {
       socket.emit('webrtc_end_call', {
-        targetSocketId: remoteCallerSocketId,
+        targetSocketId: remoteCallerSocketIdRef.current || remoteCallerSocketId,
         channel: `quiz:${pin}`
       });
     }
@@ -701,8 +781,23 @@ export const WhatsAppChat: React.FC<WhatsAppChatProps> = ({
     }
   });
 
-  const availableParticipants = participants.filter(
-    p => p.id !== currentUser.id && p.nickname.toLowerCase().includes(dmSearch.toLowerCase())
+  const hostParticipantObj: Participant = {
+    id: 'host',
+    nickname: 'Host (Organizer)',
+    emoji: '👑',
+    avatar: 'avatar-host',
+    score: 0,
+    rank: 0,
+    streak: 0,
+    isConnected: true
+  };
+
+  const allAvailable = (!currentUser.isHost && currentUser.id !== 'host')
+    ? [hostParticipantObj, ...participants.filter(p => p.id !== currentUser.id)]
+    : participants.filter(p => p.id !== currentUser.id);
+
+  const availableParticipants = allAvailable.filter(
+    p => p.nickname.toLowerCase().includes(dmSearch.toLowerCase())
   );
   const dmMessagesCount = messages.filter(m => m.recipientId === currentUser.id).length;
   const typingNames = Array.from(typingUsers.values());

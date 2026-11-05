@@ -98,6 +98,8 @@ export const WhatsAppCallModal: React.FC<WhatsAppCallModalProps> = ({
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
   const miniRemoteVideoRef = useRef<HTMLVideoElement>(null);
   const miniLocalVideoRef = useRef<HTMLVideoElement>(null);
+  const remoteAudioRef = useRef<HTMLAudioElement>(null);
+  const miniRemoteAudioRef = useRef<HTMLAudioElement>(null);
   const [duration, setDuration] = useState(0);
   const [isMinimized, setIsMinimized] = useState(false);
   const [pipWindow, setPipWindow] = useState<Window | null>(null);
@@ -125,6 +127,15 @@ export const WhatsAppCallModal: React.FC<WhatsAppCallModalProps> = ({
       if (miniRemoteVideoRef.current) {
         miniRemoteVideoRef.current.srcObject = remoteStream;
         miniRemoteVideoRef.current.play().catch(() => {});
+      }
+      // Ensure audio element is also bound and playing so voice calls (and video calls) ALWAYS output audio!
+      if (remoteAudioRef.current) {
+        remoteAudioRef.current.srcObject = remoteStream;
+        remoteAudioRef.current.play().catch(e => console.warn('Audio playback error:', e));
+      }
+      if (miniRemoteAudioRef.current) {
+        miniRemoteAudioRef.current.srcObject = remoteStream;
+        miniRemoteAudioRef.current.play().catch(e => console.warn('Mini audio playback error:', e));
       }
     }
   }, [remoteStream, isOpen, isVideo, callState, isMinimized]);
@@ -298,6 +309,9 @@ export const WhatsAppCallModal: React.FC<WhatsAppCallModalProps> = ({
             )}
           </div>
 
+          {/* Hidden Audio Tag for Guaranteed Audio Playback in Minimized Mode */}
+          <audio ref={miniRemoteAudioRef} autoPlay playsInline className="hidden" />
+
           {/* Mini Local Video PIP */}
           {isVideo && remoteStream && localStream && (
             <div className="absolute top-2 right-2 z-10 w-20 h-24 rounded-xl overflow-hidden border border-white/40 shadow-lg bg-black">
@@ -433,6 +447,19 @@ export const WhatsAppCallModal: React.FC<WhatsAppCallModalProps> = ({
             </button>
           </div>
         </div>
+
+        {/* Hidden Audio Tag in Desktop PiP Window */}
+        <audio
+          ref={el => {
+            if (el && remoteStream) {
+              el.srcObject = remoteStream;
+              el.play().catch(() => {});
+            }
+          }}
+          autoPlay
+          playsInline
+          className="hidden"
+        />
 
         {/* Live Video or Avatar Display */}
         <div className="relative flex-1 flex items-center justify-center overflow-hidden bg-slate-900">
@@ -621,6 +648,9 @@ export const WhatsAppCallModal: React.FC<WhatsAppCallModalProps> = ({
 
           {/* Video / Call Stage */}
           <div className="relative flex-1 flex items-center justify-center overflow-hidden">
+            {/* Always-on Audio Element for Remote Audio in Voice and Video Calls */}
+            <audio ref={remoteAudioRef} autoPlay playsInline className="hidden" />
+
             {isVideo && (remoteStream || (localStream && callState === 'connected')) ? (
               /* Remote Video Stream or Local fallback */
               <video
